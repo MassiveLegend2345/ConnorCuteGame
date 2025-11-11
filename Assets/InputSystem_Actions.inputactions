@@ -64,7 +64,7 @@
                     "name": "Previous",
                     "type": "Button",
                     "id": "2776c80d-3c14-4091-8c56-d04ced07a2b0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -73,7 +73,7 @@
                     "name": "Next",
                     "type": "Button",
                     "id": "b7230bb6-fc9b-4f52-8b25-f5e19cb2c2ba",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -82,7 +82,16 @@
                     "name": "Sprint",
                     "type": "Button",
                     "id": "641cd816-40e6-41b4-8c3d-04687c349290",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Alt",
+                    "type": "Button",
+                    "id": "6966926b-4d58-4c46-9410-1a31b9c8fe27",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -471,6 +480,28 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4d27f6ae-aaa6-4849-aed2-2c1cf2f34214",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Alt",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e2e4e2a8-f739-4e43-a322-3962f2430abe",
+                    "path": "<Keyboard>/rightAlt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Alt",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -987,6 +1018,45 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Alt",
+            "id": "12e0031e-b420-4f01-982c-94e054ad87dd",
+            "actions": [
+                {
+                    "name": "Alt",
+                    "type": "Button",
+                    "id": "08b8d879-2a1d-4ea6-acd3-cfa4d7daa7ce",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "2551f70c-29c0-4ee9-a8b3-7b26631110b8",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Alt",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a9ec9fb5-7bb8-4fa4-94da-9e4a22cce9e6",
+                    "path": "<Keyboard>/leftAlt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Alt",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

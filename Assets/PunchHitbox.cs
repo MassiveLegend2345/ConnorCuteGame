@@ -1,20 +1,18 @@
 using UnityEngine;
 
-public class PunchHitbox : MonoBehaviour
+public class Punchy : MonoBehaviour
 {
     [SerializeField] private float knockbackForce = 10f;
-    [SerializeField] private string targetTag = "Player"; // or "Enemy" depending on who gets knocked
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(targetTag))
+        if (other.CompareTag("Enemy"))
         {
             Rigidbody rb = other.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 Vector3 knockbackDir = (other.transform.position - transform.position).normalized;
                 rb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
-
             }
         }
     }
