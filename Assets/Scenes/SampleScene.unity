@@ -1095,6 +1095,7 @@ MonoBehaviour:
   punchForce: 12
   recoilForce: 25
   punchCooldown: 0.1
+  punchDelay: 0.5
   bobSpeed: 4.8
   bobAmount: 0.05
   dashSpeed: 25

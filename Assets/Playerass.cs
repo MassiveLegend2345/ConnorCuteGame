@@ -20,9 +20,10 @@ public class FPSController : MonoBehaviour
     [SerializeField] private GameObject punchHitbox;
     [SerializeField] private float hitboxActiveTime = 0.15f;
     [SerializeField] private float punchRange = 2f;
-    [SerializeField] private float punchForce = 15f; // for enemies
-    [SerializeField] private float recoilForce = 8f; // for player recoil
+    [SerializeField] private float punchForce = 15f; // enemy knockback
+    [SerializeField] private float recoilForce = 8f; // player recoil
     [SerializeField] private float punchCooldown = 0.3f;
+    [SerializeField] private float punchDelay = 0.5f; // <-- NEW: delay before punch hits
 
     [Header("Head Bob")]
     public float bobSpeed = 4.8f;
@@ -138,7 +139,10 @@ public class FPSController : MonoBehaviour
         canPunch = false;
         punchHitbox.SetActive(true);
 
-        // Raycast to detect what we hit
+        // --- Delay before actual impact (wind-up) ---
+        yield return new WaitForSeconds(punchDelay);
+
+        // Perform raycast after delay
         RaycastHit hit;
         Vector3 origin = playerCamera.transform.position;
         Vector3 direction = playerCamera.transform.forward;
