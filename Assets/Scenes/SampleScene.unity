@@ -990,7 +990,7 @@ MonoBehaviour:
   lookXLimit: 45
   boosterspeed: 50
   launchForce: 20
-  restPosition: {x: 0, y: 0, z: 0}
+  restPosition: {x: 0.1, y: 1, z: 0.1}
   camera: {fileID: 330585546}
   bobSpeed: 4.8
   bobAmount: 0.05
