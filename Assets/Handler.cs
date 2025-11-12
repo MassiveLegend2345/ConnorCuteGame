@@ -3,45 +3,69 @@ using UnityEngine.UI;
 
 public class UIClickHandler : MonoBehaviour
 {
-    public RawImage rawImageElement;
-    public Image imageElement;
+    [Header("UI Elements")]
+    public RawImage idleImage;            // Still image
+
+    [Header("Mouse0 Animation")]
+    public Animator mouse0Animator;       // Animator for Mouse0 tap
+    public float mouse0Duration = 0.5f;   // Duration of Mouse0 animation in seconds
+
+    [Header("F Animation")]
+    public Animator fAnimator;            // Animator for F tap
+    public float fDuration = 1f;          // Duration of F animation in seconds
+
+    private bool isPlaying = false;       // Is any animation playing
 
     private void Start()
     {
-        // Ensure initial state
-        if (rawImageElement != null) rawImageElement.gameObject.SetActive(true);
-        if (imageElement != null) imageElement.gameObject.SetActive(false);
+        // Show only idle image at start
+        idleImage.gameObject.SetActive(true);
+
+        // Hide animators at start
+        if (mouse0Animator != null) mouse0Animator.gameObject.SetActive(false);
+        if (fAnimator != null) fAnimator.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (isPlaying) return; // Ignore input while animation is playing
+
+        // Mouse0 tap
+        if (Input.GetMouseButtonDown(0) && mouse0Animator != null)
         {
-            ToggleUIElements();
+            PlayAnimation(mouse0Animator, mouse0Duration);
         }
-        if (Input.GetMouseButtonUp(0))
+
+        // F tap
+        if (Input.GetKeyDown(KeyCode.F) && fAnimator != null)
         {
-            UnToggleUIElements();
+            PlayAnimation(fAnimator, fDuration);
         }
     }
 
-    private void ToggleUIElements()
+    private void PlayAnimation(Animator animator, float duration)
     {
-        if (rawImageElement != null)
-            rawImageElement.gameObject.SetActive(!rawImageElement.gameObject.activeSelf);
+        isPlaying = true;
 
-        if (imageElement != null)
-            imageElement.gameObject.SetActive(!imageElement.gameObject.activeSelf);
+        // Hide idle
+        idleImage.gameObject.SetActive(false);
+
+        // Show and play animator
+        animator.gameObject.SetActive(true);
+        animator.Play(0); // play default animation from start
+
+        // Schedule return to idle
+        Invoke(nameof(EndAnimation), duration);
     }
-    private void UnToggleUIElements()
+
+    private void EndAnimation()
     {
+        // Hide both animators
+        if (mouse0Animator != null) mouse0Animator.gameObject.SetActive(false);
+        if (fAnimator != null) fAnimator.gameObject.SetActive(false);
 
-        if (imageElement != null)
-            imageElement.gameObject.SetActive(!imageElement.gameObject.activeSelf);
-
-        if (rawImageElement != null)
-            rawImageElement.gameObject.SetActive(!rawImageElement.gameObject.activeSelf);
-
-
+        // Show idle
+        idleImage.gameObject.SetActive(true);
+        isPlaying = false;
     }
 }
