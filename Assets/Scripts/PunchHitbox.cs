@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Punchy : MonoBehaviour
+public class PunchyBox : MonoBehaviour
 {
     [SerializeField] private float punchForce = 15f;
     [SerializeField] private float recoilForce = 10f;
@@ -23,7 +23,7 @@ public class Punchy : MonoBehaviour
             {
                 Vector3 knockDir = (other.transform.position - transform.position).normalized;
                 enemy.Knockback(knockDir, punchForce);
-                yield break; 
+                yield break;
             }
         }
 

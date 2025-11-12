@@ -3,10 +3,8 @@ using System.Collections;
 
 public class EnemyKnockback : MonoBehaviour
 {
-    [Header("Knockback Settings")]
     public float knockbackForceMultiplier = 5f;
 
-    [Header("Sprite Objects")]
     public GameObject spriteOne;
     public GameObject spriteTwo;
     public float hitDuration = 5f;
@@ -19,8 +17,6 @@ public class EnemyKnockback : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-
-        // Set initial state
         if (spriteOne != null)
             spriteOne.SetActive(true);
         if (spriteTwo != null)
@@ -31,13 +27,10 @@ public class EnemyKnockback : MonoBehaviour
     {
         if (rb != null && !isInHitState)
         {
-            // Detect sudden velocity changes (knockback)
             float velocityChange = (rb.linearVelocity - lastVelocity).magnitude;
-
-            // If there's a sudden large velocity change, assume knockback occurred
-            if (velocityChange > 10f) // Adjust this threshold as needed
+            if (velocityChange > 10f) 
             {
-                Debug.Log($"Detected knockback! Velocity change: {velocityChange}");
+                Debug.Log($"SENDDDD: {velocityChange}");
                 SwitchToHitSprite();
             }
 
@@ -47,8 +40,6 @@ public class EnemyKnockback : MonoBehaviour
 
     public void Knockback(Vector3 direction, float force)
     {
-        Debug.Log("Knockback method called directly");
-
         if (rb != null)
         {
             rb.AddForce(direction.normalized * force * knockbackForceMultiplier, ForceMode.Impulse);
@@ -59,9 +50,9 @@ public class EnemyKnockback : MonoBehaviour
 
     private void SwitchToHitSprite()
     {
-        if (isInHitState) return; // Already in hit state
+        if (isInHitState) return; 
 
-        Debug.Log("SWITCHING TO SPRITE TWO");
+        Debug.Log("Workeddd bitch");
 
         if (hitCoroutine != null)
         {
@@ -71,13 +62,13 @@ public class EnemyKnockback : MonoBehaviour
         if (spriteOne != null)
         {
             spriteOne.SetActive(false);
-            Debug.Log("Sprite One disabled");
+            Debug.Log("Sprite1");
         }
 
         if (spriteTwo != null)
         {
             spriteTwo.SetActive(true);
-            Debug.Log("Sprite Two enabled");
+            Debug.Log("Sprite2");
         }
 
         isInHitState = true;
@@ -99,10 +90,10 @@ public class EnemyKnockback : MonoBehaviour
         hitCoroutine = null;
     }
 
-    [ContextMenu("TEST SPRITE SWITCH")]
+    [ContextMenu("Test")]
     public void TestSpriteSwitch()
     {
-        Debug.Log("=== TESTING SPRITE SWITCH ===");
+        Debug.Log("Connor you did it you're a real hero you really fuccking did it holy shit");
         SwitchToHitSprite();
     }
 }

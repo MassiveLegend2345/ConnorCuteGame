@@ -4,7 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
-    [Header("Movement Settings")]
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float jumpSpeed = 8.0f;
@@ -16,26 +15,23 @@ public class FPSController : MonoBehaviour
     public Transform camera;
     public Vector3 restPosition;
 
-    [Header("Punch Settings")]
     [SerializeField] private GameObject punchHitbox;
     [SerializeField] private float hitboxActiveTime = 0.15f;
     [SerializeField] private float punchRange = 2f;
-    [SerializeField] private float punchForce = 15f; // enemy knockback
-    [SerializeField] private float recoilForce = 8f; // player recoil
+    [SerializeField] private float punchForce = 15f; 
+    [SerializeField] private float recoilForce = 8f; 
     [SerializeField] private float punchCooldown = 0.3f;
-    [SerializeField] private float punchDelay = 0.5f; // <-- NEW: delay before punch hits
+    [SerializeField] private float punchDelay = 0.5f; 
 
-    [Header("Head Bob")]
-    public float bobSpeed = 4.8f;
+    public float bobSpeed = 4.8f; //Don't even fuckin use it ffs
     public float bobAmount = 0.05f;
 
-    [Header("Dash Settings")]
     public float dashSpeed = 50f;
     public float dashDuration = 0.15f;
     public float dashCooldown = 0.4f;
     public float dashVerticalBoost = 2f;
 
-    private CharacterController characterController;
+    private CharacterController characterController; 
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
     private float timer = Mathf.PI / 2;
@@ -138,18 +134,13 @@ public class FPSController : MonoBehaviour
     {
         canPunch = false;
         punchHitbox.SetActive(true);
-
-        // --- Delay before actual impact (wind-up) ---
         yield return new WaitForSeconds(punchDelay);
-
-        // Perform raycast after delay
         RaycastHit hit;
         Vector3 origin = playerCamera.transform.position;
         Vector3 direction = playerCamera.transform.forward;
 
         if (Physics.Raycast(origin, direction, out hit, punchRange))
         {
-            // If it has a rigidbody -> knockback enemy/object
             Rigidbody rb = hit.collider.attachedRigidbody;
             if (rb != null)
             {
@@ -158,7 +149,6 @@ public class FPSController : MonoBehaviour
             }
             else
             {
-                // Hit something solid (wall): apply recoil
                 Vector3 recoilDir = -direction * recoilForce;
                 StartCoroutine(DoRecoil(recoilDir));
             }
@@ -172,7 +162,7 @@ public class FPSController : MonoBehaviour
 
     private IEnumerator DoRecoil(Vector3 recoilDir)
     {
-        float duration = 0.1f; // quick impulse
+        float duration = 0.1f; 
         float elapsed = 0f;
 
         while (elapsed < duration)
