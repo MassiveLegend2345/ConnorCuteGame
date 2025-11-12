@@ -221,4 +221,10 @@ public class FPSController : MonoBehaviour
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
     }
+    public void ApplyRecoil(Vector3 recoil)
+    {
+        moveDirection += recoil;
+    }
+
+
 }
