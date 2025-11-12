@@ -3207,7 +3207,7 @@ MonoBehaviour:
   mouse0Animator: {fileID: 475644718}
   mouse0Duration: 0.8
   fAnimator: {fileID: 9953787}
-  fDuration: 1.2
+  fDuration: 1.7
 --- !u!1 &1929403161
 GameObject:
   m_ObjectHideFlags: 0
