@@ -14,7 +14,12 @@ public class UIClickHandler : MonoBehaviour
     public Animator fAnimator;            // Animator for F tap
     public float fDuration = 1f;          // Duration of F animation in seconds
 
+    [Header("Audio")]
+    public AudioSource audioSource;       // AudioSource component
+    public AudioClip[] fClips;            // Array of 3 m4a clips to cycle through
+
     private bool isPlaying = false;       // Is any animation playing
+    private int currentClipIndex = 0;     // Which clip is next
 
     private void Start()
     {
@@ -24,6 +29,10 @@ public class UIClickHandler : MonoBehaviour
         // Hide animators at start
         if (mouse0Animator != null) mouse0Animator.gameObject.SetActive(false);
         if (fAnimator != null) fAnimator.gameObject.SetActive(false);
+
+        // Ensure audioSource exists
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     private void Update()
@@ -40,6 +49,7 @@ public class UIClickHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F) && fAnimator != null)
         {
             PlayAnimation(fAnimator, fDuration);
+            PlayNextClip();
         }
     }
 
@@ -67,5 +77,17 @@ public class UIClickHandler : MonoBehaviour
         // Show idle
         idleImage.gameObject.SetActive(true);
         isPlaying = false;
+    }
+
+    private void PlayNextClip()
+    {
+        if (fClips.Length == 0) return;
+
+        // Play current clip
+        audioSource.clip = fClips[currentClipIndex];
+        audioSource.Play();
+
+        // Advance to next clip index
+        currentClipIndex = (currentClipIndex + 1) % fClips.Length;
     }
 }
