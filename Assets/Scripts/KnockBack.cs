@@ -1,71 +1,37 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyKnockback : MonoBehaviour
 {
+    [Header("Knockback Settings")]
     public float knockbackForceMultiplier = 5f;
-
-    public GameObject spriteOne;
-    public GameObject spriteTwo;
-    public float hitDuration = 5f;
+    public float hitDuration = 0.5f; // sprite stays in hit state
+    public GameObject spriteNormal;
+    public GameObject spriteHit;
 
     private Rigidbody rb;
-    private Coroutine hitCoroutine;
-    private Vector3 lastVelocity;
     private bool isInHitState = false;
+    private Coroutine hitCoroutine;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        if (spriteOne != null)
-            spriteOne.SetActive(true);
-        if (spriteTwo != null)
-            spriteTwo.SetActive(false);
-    }
-
-    private void Update()
-    {
-        if (rb != null && !isInHitState)
-        {
-            float velocityChange = (rb.linearVelocity - lastVelocity).magnitude;
-            if (velocityChange > 10f)
-            {
-                Debug.Log($"SENDDDD: {velocityChange}");
-                SwitchToHitSprite();
-            }
-
-            lastVelocity = rb.linearVelocity;
-        }
+        if (spriteNormal != null) spriteNormal.SetActive(true);
+        if (spriteHit != null) spriteHit.SetActive(false);
     }
 
     public void Knockback(Vector3 direction, float force)
     {
-        var agent = GetComponentInParent<EnemyAI>()?.npc.Agent;
-
+        // Apply physics knockback
         if (rb != null)
         {
-            // Temporarily disable NavMeshAgent so physics can affect the enemy
-            if (agent != null) agent.enabled = false;
-
-            // Add upward component to ensure height
-            Vector3 knockDir = (direction + Vector3.up * 0.5f).normalized;
+            Vector3 knockDir = (direction + Vector3.up * 0.2f).normalized;
             rb.AddForce(knockDir * force * knockbackForceMultiplier, ForceMode.Impulse);
-
-            // Re-enable agent after a short delay
-            StartCoroutine(ReenableAgent(agent, 0.5f));
         }
 
-        // Trigger flee behavior from EnemyAI
-        GetComponentInParent<EnemyAI>()?.TriggerFlee();
-
+        // Switch sprite
         SwitchToHitSprite();
-    }
-
-    private IEnumerator ReenableAgent(NavMeshAgent agent, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (agent != null) agent.enabled = true;
     }
 
     private void SwitchToHitSprite()
@@ -73,15 +39,10 @@ public class EnemyKnockback : MonoBehaviour
         if (isInHitState) return;
 
         if (hitCoroutine != null)
-        {
             StopCoroutine(hitCoroutine);
-        }
 
-        if (spriteOne != null)
-            spriteOne.SetActive(false);
-
-        if (spriteTwo != null)
-            spriteTwo.SetActive(true);
+        if (spriteNormal != null) spriteNormal.SetActive(false);
+        if (spriteHit != null) spriteHit.SetActive(true);
 
         isInHitState = true;
         hitCoroutine = StartCoroutine(SwitchBackAfterDelay());
@@ -90,19 +51,8 @@ public class EnemyKnockback : MonoBehaviour
     private IEnumerator SwitchBackAfterDelay()
     {
         yield return new WaitForSeconds(hitDuration);
-
-        if (spriteTwo != null)
-            spriteTwo.SetActive(false);
-        if (spriteOne != null)
-            spriteOne.SetActive(true);
-
+        if (spriteHit != null) spriteHit.SetActive(false);
+        if (spriteNormal != null) spriteNormal.SetActive(true);
         isInHitState = false;
-        hitCoroutine = null;
-    }
-
-    [ContextMenu("Test")]
-    public void TestSpriteSwitch()
-    {
-        SwitchToHitSprite();
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class PunchyBox : MonoBehaviour
@@ -8,61 +8,41 @@ public class PunchyBox : MonoBehaviour
     [SerializeField] private float punchDelay = 0.5f;
     [SerializeField] private FPSController player;
 
-    private void OnTriggerEnter(Collider other)
+    public void Activate()
     {
-        Debug.Log("=== PUNCH TRIGGERED ===");
-        Debug.Log($"Hit object: {other.name}");
-        Debug.Log($"Tag: {other.tag}");
-        Debug.Log($"IsTrigger: {other.isTrigger}");
-        Debug.Log($"Layer: {LayerMask.LayerToName(other.gameObject.layer)}");
-
-        Transform p = other.transform;
-        int depth = 0;
-        while (p != null && depth < 5)
-        {
-            Debug.Log($"Parent[{depth}] = {p.name}");
-            p = p.parent;
-            depth++;
-        }
-
-        EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
-        Debug.Log($"EnemyKnockback found?: {ek}");
-
-        StartCoroutine(HandlePunchHit(other, ek));
+        StartCoroutine(HandlePunch());
     }
 
-    private IEnumerator HandlePunchHit(Collider other, EnemyKnockback ek)
+    private IEnumerator HandlePunch()
     {
+        gameObject.SetActive(true);
+
         yield return new WaitForSeconds(punchDelay);
 
-        // Did we hit an Enemy-tagged collider?
-        if (other.CompareTag("Enemy"))
+        Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2f);
+        foreach (Collider other in hits)
         {
-            Debug.Log("Tag matched Enemy.");
-
-            if (ek != null)
+            if (other.CompareTag("Enemy"))
             {
-                Debug.Log("Calling Knockback...");
-                Vector3 knockDir = (other.transform.position - transform.position).normalized;
-                ek.Knockback(knockDir, punchForce);
-                yield break;
+                EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
+                if (ek != null)
+                {
+                    Vector3 knockDir = (other.transform.position - transform.position).normalized;
+                    ek.Knockback(knockDir, punchForce);
+                }
             }
             else
             {
-                Debug.Log("EnemyKnockback NOT found in parent chain.");
+                // Apply recoil if hitting non-enemy
+                if (player != null)
+                {
+                    Vector3 recoilDir = -transform.forward * recoilForce;
+                    player.ApplyRecoil(recoilDir);
+                }
             }
         }
-        else
-        {
-            Debug.Log("Tag did NOT match Enemy.");
-        }
 
-        // Fallback: recoil
-        if (!other.isTrigger)
-        {
-            Debug.Log("Applying recoil to player...");
-            Vector3 recoilDir = -transform.forward * recoilForce;
-            player.ApplyRecoil(recoilDir);
-        }
+        yield return new WaitForSeconds(0.15f);
+        gameObject.SetActive(false);
     }
 }
