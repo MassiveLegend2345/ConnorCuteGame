@@ -11,9 +11,11 @@ public class EnemyKnockback : MonoBehaviour
     public float hitDuration = 0.5f;
 
     [Header("Hit Sounds")]
-    public AudioClip[] hitSounds;        // Assign 4 clips in Inspector
-    public AudioSource audioSource;      // Assign the AudioSource on the enemy
-    private int currentSoundIndex = 0;
+    public AudioClip[] hitSounds;        // Enemy scream sounds
+    public AudioClip[] punchSounds;      // Punch SFX
+    public AudioSource audioSource;      // AudioSource for both
+    private int currentHitSound = 0;
+    private int currentPunchSound = 0;
 
     private Rigidbody rb;
     private Coroutine hitCoroutine;
@@ -33,11 +35,8 @@ public class EnemyKnockback : MonoBehaviour
         }
     }
 
-    public void Knockback(Vector3 direction, float force)
+    public void Knockback(Vector3 direction, float force, bool isPunch = false)
     {
-        // Play hit sound
-        PlayHitSound();
-
         // Knockback physics
         if (rb != null)
         {
@@ -45,20 +44,35 @@ public class EnemyKnockback : MonoBehaviour
             rb.AddForce(knockDir * force * knockbackForceMultiplier, ForceMode.Impulse);
         }
 
-        // Switch sprite
         SwitchToHitSprite();
+
+        if (isPunch)
+        {
+            PlayPunchSound();
+        }
+
+        PlayHitSound();
+        PlayPunchSound();
     }
 
     private void PlayHitSound()
     {
         if (hitSounds.Length == 0 || audioSource == null) return;
 
-        audioSource.clip = hitSounds[currentSoundIndex];
-        audioSource.Play();
+        audioSource.PlayOneShot(hitSounds[currentHitSound]);
+        currentHitSound++;
+        if (currentHitSound >= hitSounds.Length)
+            currentHitSound = 0;
+    }
 
-        currentSoundIndex++;
-        if (currentSoundIndex >= hitSounds.Length)
-            currentSoundIndex = 0; // loop
+    private void PlayPunchSound()
+    {
+        if (punchSounds.Length == 0 || audioSource == null) return;
+
+        audioSource.PlayOneShot(punchSounds[currentPunchSound]);
+        currentPunchSound++;
+        if (currentPunchSound >= punchSounds.Length)
+            currentPunchSound = 0;
     }
 
     private void SwitchToHitSprite()

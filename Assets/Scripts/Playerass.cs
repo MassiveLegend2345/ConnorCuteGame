@@ -225,6 +225,7 @@ public class FPSController : MonoBehaviour
         canDash = true;
     }
 
+
     public void ApplyRecoil(Vector3 recoil)
     {
         moveDirection += recoil;

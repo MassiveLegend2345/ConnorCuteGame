@@ -1,56 +1,66 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public class PunchyBox : MonoBehaviour
 {
     [Header("Punch Settings")]
-    [SerializeField] private float punchForce = 15f;
-    [SerializeField] private float recoilForce = 10f;
-    [SerializeField] private float punchDelay = 0.5f;
-    [SerializeField] private FPSController player;
+    public float punchForce = 15f;
+    public float recoilForce = 8f;
 
     [Header("Score & Timer")]
-    [SerializeField] private int scoreAmount = 1;      // Points per punch
-    [SerializeField] private float timeAmount = 0.5f;  // Seconds added per punch
+    public int scoreAmount = 1;
+    public float timeAmount = 0.5f;
+
+    [Header("Punch Audio")]
+    public AudioSource punchAudioSource; // always-active object
+    public AudioClip[] punchClips;
+
+    [Header("Player Reference")]
+    public FPSController player;
+
+    private Collider col;
+    private int clipIndex = 0;
+
+    private void Awake()
+    {
+        col = GetComponent<Collider>();
+        col.isTrigger = true;
+        col.enabled = false;
+    }
 
     public void Activate()
     {
-        StartCoroutine(HandlePunch());
+        col.enabled = true;
     }
 
-    private IEnumerator HandlePunch()
+    private void OnTriggerEnter(Collider other)
     {
-        gameObject.SetActive(true);
+        if (!other.CompareTag("Enemy")) return;
 
-        yield return new WaitForSeconds(punchDelay);
+        // Score & time
+        GameManager.Instance?.AddScore(scoreAmount);
+        GameManager.Instance?.AddTime(timeAmount);
 
-        Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2f);
-        foreach (Collider other in hits)
+        // Knockback
+        EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
+        if (ek != null)
         {
-            if (other.CompareTag("Enemy"))
-            {
-                // Add score and time
-                GameManager.Instance?.AddScore(scoreAmount);
-                GameManager.Instance?.AddTime(timeAmount);
-
-                EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
-                if (ek != null)
-                {
-                    Vector3 knockDir = (other.transform.position - transform.position).normalized;
-                    ek.Knockback(knockDir, punchForce);
-                }
-            }
-            else
-            {
-                if (player != null)
-                {
-                    Vector3 recoilDir = -transform.forward * recoilForce;
-                    player.ApplyRecoil(recoilDir);
-                }
-            }
+            Vector3 knockDir = (other.transform.position - transform.position).normalized;
+            ek.Knockback(knockDir, punchForce);
         }
 
-        yield return new WaitForSeconds(0.15f);
-        gameObject.SetActive(false);
+        // Play sound
+        if (punchAudioSource != null && punchClips.Length > 0)
+        {
+            punchAudioSource.PlayOneShot(punchClips[clipIndex]);
+            clipIndex = (clipIndex + 1) % punchClips.Length;
+        }
+
+        // Apply recoil to player if needed
+        if (player != null)
+        {
+            Vector3 recoilDir = -transform.forward * recoilForce;
+            player.ApplyRecoil(recoilDir);
+        }
     }
 }

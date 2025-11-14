@@ -1,36 +1,45 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public class FlipOffBox : MonoBehaviour
 {
-    [Header("Flip Off Settings")]
-    [SerializeField] private float knockbackForce = 5f;
-    [SerializeField] private float activeTime = 0.1f;
-    [SerializeField] private Collider hitboxCollider;  // assign in inspector
+    public float knockForce = 5f;
 
-    [Header("Score & Timer")]
-    [SerializeField] private int scoreAmount = 5;
-    [SerializeField] private float timeAmount = 1f;
+    public int scoreAmount = 5;
+    public float timeAmount = 1f;
+
+    public AudioClip[] hitSounds;
+    public AudioSource audioSource;
+
+    private int currentSoundIndex = 0;
+    private Collider col;
+
+    private void Awake()
+    {
+        col = GetComponent<Collider>();
+        col.enabled = false;
+    }
 
     public void Activate()
     {
-        // Make sure we run the coroutine even if the visual or collider is disabled
-        StartCoroutine(HandleFlipOff());
+        StartCoroutine(FlipRoutine());
     }
 
-    private IEnumerator HandleFlipOff()
+    private IEnumerator FlipRoutine()
     {
-        // Enable the collider for the duration
-        if (hitboxCollider != null) hitboxCollider.enabled = true;
+        col.enabled = true;
+        yield return new WaitForSeconds(0.1f);
 
-        yield return new WaitForSeconds(activeTime);
+        Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2f);
+        bool hitSomething = false;
 
-        // Detect enemies manually
-        Collider[] hits = Physics.OverlapBox(hitboxCollider.transform.position, hitboxCollider.bounds.extents);
         foreach (Collider other in hits)
         {
             if (other.CompareTag("Enemy"))
             {
+                hitSomething = true;
+
                 GameManager.Instance?.AddScore(scoreAmount);
                 GameManager.Instance?.AddTime(timeAmount);
 
@@ -38,12 +47,28 @@ public class FlipOffBox : MonoBehaviour
                 if (ek != null)
                 {
                     Vector3 knockDir = (other.transform.position - transform.position).normalized;
-                    ek.Knockback(knockDir, knockbackForce);
+                    ek.Knockback(knockDir, knockForce);
                 }
             }
         }
 
-        // Disable collider again
-        if (hitboxCollider != null) hitboxCollider.enabled = false;
+        if (hitSomething)
+        {
+            PlayHitSound();
+        }
+
+        col.enabled = false;
+    }
+
+    private void PlayHitSound()
+    {
+        if (hitSounds.Length == 0 || audioSource == null) return;
+
+        audioSource.clip = hitSounds[currentSoundIndex];
+        audioSource.Play();
+
+        currentSoundIndex++;
+        if (currentSoundIndex >= hitSounds.Length)
+            currentSoundIndex = 0;
     }
 }
