@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class EnemyAudioOnHit : MonoBehaviour
 {
-    [Header("Punch Hit Sounds")]
-    public AudioSource punchAudioSource; // attach on enemy
-    public AudioClip[] punchHitClips;    // assign 2 clips here
+    public AudioSource punchAudioSource; 
+    public AudioClip[] punchHitClips;    
     private int currentClipIndex = 0;
 
     public void PlayPunchSound()

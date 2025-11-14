@@ -12,7 +12,7 @@ public class PunchyBox : MonoBehaviour
     public float timeAmount = 0.5f;
 
     [Header("Punch Audio")]
-    public AudioSource punchAudioSource; // always-active object
+    public AudioSource punchAudioSource;
     public AudioClip[] punchClips;
 
     [Header("Player Reference")]
@@ -37,11 +37,9 @@ public class PunchyBox : MonoBehaviour
     {
         if (!other.CompareTag("Enemy")) return;
 
-        // Score & time
         GameManager.Instance?.AddScore(scoreAmount);
         GameManager.Instance?.AddTime(timeAmount);
 
-        // Knockback
         EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
         if (ek != null)
         {
@@ -49,14 +47,11 @@ public class PunchyBox : MonoBehaviour
             ek.Knockback(knockDir, punchForce);
         }
 
-        // Play sound
         if (punchAudioSource != null && punchClips.Length > 0)
         {
             punchAudioSource.PlayOneShot(punchClips[clipIndex]);
             clipIndex = (clipIndex + 1) % punchClips.Length;
         }
-
-        // Apply recoil to player if needed
         if (player != null)
         {
             Vector3 recoilDir = -transform.forward * recoilForce;

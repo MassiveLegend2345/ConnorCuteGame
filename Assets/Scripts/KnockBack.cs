@@ -10,10 +10,9 @@ public class EnemyKnockback : MonoBehaviour
     public GameObject spriteTwo;
     public float hitDuration = 0.5f;
 
-    [Header("Hit Sounds")]
-    public AudioClip[] hitSounds;        // Enemy scream sounds
-    public AudioClip[] punchSounds;      // Punch SFX
-    public AudioSource audioSource;      // AudioSource for both
+    public AudioClip[] hitSounds;       
+    public AudioClip[] punchSounds;      
+    public AudioSource audioSource;      
     private int currentHitSound = 0;
     private int currentPunchSound = 0;
 
@@ -37,7 +36,6 @@ public class EnemyKnockback : MonoBehaviour
 
     public void Knockback(Vector3 direction, float force, bool isPunch = false)
     {
-        // Knockback physics
         if (rb != null)
         {
             Vector3 knockDir = (direction + Vector3.up * 0.5f).normalized;
