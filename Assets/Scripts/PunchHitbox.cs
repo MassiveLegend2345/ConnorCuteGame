@@ -33,7 +33,6 @@ public class PunchyBox : MonoBehaviour
             }
             else
             {
-                // Apply recoil if hitting non-enemy
                 if (player != null)
                 {
                     Vector3 recoilDir = -transform.forward * recoilForce;

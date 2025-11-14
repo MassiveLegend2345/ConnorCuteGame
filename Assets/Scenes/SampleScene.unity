@@ -4239,13 +4239,13 @@ MonoBehaviour:
   secondJS: 6
   gravity: 13
   lookSpeed: 2
-  lookXLimit: 45
+  lookXLimit: 90
   playerCamera: {fileID: 330585545}
   camera: {fileID: 330585546}
   restPosition: {x: 0, y: 1, z: 0}
   punchHitbox: {fileID: 1250722886}
   punchRange: 2
-  punchForce: 15
+  punchForce: 12
   punchRecoil: 8
   punchDelay: 0.5
   punchCooldown: 0.3
@@ -4253,7 +4253,7 @@ MonoBehaviour:
   dashSpeed: 50
   dashDuration: 0.15
   dashCooldown: 0.4
-  dashVerticalBoost: 2
+  dashVerticalBoost: 5
   bobSpeed: 4.8
   bobAmount: 0.05
 --- !u!143 &518330027
@@ -9140,8 +9140,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cedb3629ea83104298c6a317ed792c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  knockbackForceMultiplier: 5
-  hitDuration: 5
+  knockbackForceMultiplier: 2
+  hitDuration: 2
   spriteNormal: {fileID: 1182034712}
   spriteHit: {fileID: 1690253304}
 --- !u!54 &1566488186
@@ -11294,9 +11294,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeTime: 0.15
-  knockbackForce: 5
-  score: 5
-  timeAdd: 1
+  knockbackForce: 12
+  score: 8
+  timeAdd: 2.5
 --- !u!114 &1963136165
 MonoBehaviour:
   m_ObjectHideFlags: 0

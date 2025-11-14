@@ -4,12 +4,11 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    [Header("Wander")]
+ 
     public float wanderRadius = 10f;
     public float wanderInterval = 3f;
     public float wanderSpeed = 2f;
 
-    [Header("Flee")]
     public float fleeDuration = 2f;
     public float fleeSpeed = 6f;
 

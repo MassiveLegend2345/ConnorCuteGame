@@ -4,21 +4,18 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
-    [Header("Movement")]
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float jumpSpeed = 8f;
     public float secondJS = 6f;
     public float gravity = 20f;
 
-    [Header("Mouse Look")]
     public float lookSpeed = 2f;
     public float lookXLimit = 45f;
     public Camera playerCamera;
     public Transform camera;
     public Vector3 restPosition;
 
-    [Header("Punch")]
     public GameObject punchHitbox;
     public float punchRange = 2f;
     public float punchForce = 15f;
@@ -26,16 +23,13 @@ public class FPSController : MonoBehaviour
     public float punchDelay = 0.5f;
     public float punchCooldown = 0.3f;
 
-    [Header("Flip Off")]
     public FlipOffBox flipOffHitbox;
 
-    [Header("Dash")]
     public float dashSpeed = 50f;
     public float dashDuration = 0.15f;
     public float dashCooldown = 0.4f;
     public float dashVerticalBoost = 2f;
 
-    [Header("Camera Bob")]
     public float bobSpeed = 4.8f;
     public float bobAmount = 0.05f;
 
@@ -66,24 +60,20 @@ public class FPSController : MonoBehaviour
         HandleMouseLook();
         HandleCameraBob();
 
-        // Punch
         if (Input.GetMouseButtonDown(0) && canPunch)
             StartCoroutine(DoPunch());
 
-        // Dash
         if (Input.GetKey(KeyCode.LeftAlt) && canDash && !characterController.isGrounded)
             StartCoroutine(Dash());
-
         
             if (Input.GetKeyDown(KeyCode.F))
             {
-                flipOffHitbox.Activate(); // properly toggles collider
+                flipOffHitbox.Activate(); 
             }
         
 
     }
 
-    // ----------------------------- MOVEMENT -----------------------------
     private void HandleMovement()
     {
         Vector3 forward = transform.TransformDirection(Vector3.forward);
@@ -96,7 +86,6 @@ public class FPSController : MonoBehaviour
 
         moveDirection = forward * curSpeedX + right * curSpeedY;
 
-        // Jumping
         if (Input.GetButtonDown("Jump") && canMove && jumpsLeft > 0)
         {
             moveDirection.y = secondJS;
@@ -118,7 +107,6 @@ public class FPSController : MonoBehaviour
         characterController.Move(moveDirection * Time.deltaTime);
     }
 
-    // --------------------------- MOUSE LOOK -----------------------------
     private void HandleMouseLook()
     {
         if (!canMove) return;
@@ -129,7 +117,6 @@ public class FPSController : MonoBehaviour
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
     }
 
-    // -------------------------- CAMERA BOB ------------------------------
     private void HandleCameraBob()
     {
         if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
@@ -149,7 +136,6 @@ public class FPSController : MonoBehaviour
         if (bobTimer > Mathf.PI * 2) bobTimer = 0;
     }
 
-    // ----------------------------- PUNCH -----------------------------
     private IEnumerator DoPunch()
     {
         canPunch = false;
@@ -170,8 +156,6 @@ public class FPSController : MonoBehaviour
                 knockDir.y = 0f;
                 knockDir = knockDir.normalized + Vector3.up * 0.2f;
                 ek.Knockback(knockDir, punchForce);
-
-                // Add score/time
                 GameManager.Instance?.AddScore(5);
                 GameManager.Instance?.AddTime(1f);
             }
@@ -207,7 +191,6 @@ public class FPSController : MonoBehaviour
         }
     }
 
-    // --------------------------- DASH -----------------------------
     private IEnumerator Dash()
     {
         canDash = false;
@@ -242,7 +225,6 @@ public class FPSController : MonoBehaviour
         canDash = true;
     }
 
-    // --------------------------- RECOIL -----------------------------
     public void ApplyRecoil(Vector3 recoil)
     {
         moveDirection += recoil;

@@ -4,9 +4,8 @@ using UnityEngine.AI;
 
 public class EnemyKnockback : MonoBehaviour
 {
-    [Header("Knockback Settings")]
     public float knockbackForceMultiplier = 5f;
-    public float hitDuration = 0.5f; // sprite stays in hit state
+    public float hitDuration = 0.5f; 
     public GameObject spriteNormal;
     public GameObject spriteHit;
 
@@ -23,14 +22,12 @@ public class EnemyKnockback : MonoBehaviour
 
     public void Knockback(Vector3 direction, float force)
     {
-        // Apply physics knockback
         if (rb != null)
         {
             Vector3 knockDir = (direction + Vector3.up * 0.2f).normalized;
             rb.AddForce(knockDir * force * knockbackForceMultiplier, ForceMode.Impulse);
         }
 
-        // Switch sprite
         SwitchToHitSprite();
     }
 
