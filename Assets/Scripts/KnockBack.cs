@@ -28,7 +28,7 @@ public class EnemyKnockback : MonoBehaviour
         if (rb != null && !isInHitState)
         {
             float velocityChange = (rb.linearVelocity - lastVelocity).magnitude;
-            if (velocityChange > 10f) 
+            if (velocityChange > 10f)
             {
                 Debug.Log($"SENDDDD: {velocityChange}");
                 SwitchToHitSprite();
@@ -45,12 +45,15 @@ public class EnemyKnockback : MonoBehaviour
             rb.AddForce(direction.normalized * force * knockbackForceMultiplier, ForceMode.Impulse);
         }
 
+        // NEW — Trigger flee behaviour from the EnemyAI script
+        GetComponentInParent<EnemyAI>()?.TriggerFlee();
+
         SwitchToHitSprite();
     }
 
     private void SwitchToHitSprite()
     {
-        if (isInHitState) return; 
+        if (isInHitState) return;
 
         Debug.Log("Workeddd bitch");
 
