@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.AI;
 
 public class EnemyKnockback : MonoBehaviour
 {
@@ -40,22 +41,36 @@ public class EnemyKnockback : MonoBehaviour
 
     public void Knockback(Vector3 direction, float force)
     {
+        var agent = GetComponentInParent<EnemyAI>()?.npc.Agent;
+
         if (rb != null)
         {
-            rb.AddForce(direction.normalized * force * knockbackForceMultiplier, ForceMode.Impulse);
+            // Temporarily disable NavMeshAgent so physics can affect the enemy
+            if (agent != null) agent.enabled = false;
+
+            // Add upward component to ensure height
+            Vector3 knockDir = (direction + Vector3.up * 0.5f).normalized;
+            rb.AddForce(knockDir * force * knockbackForceMultiplier, ForceMode.Impulse);
+
+            // Re-enable agent after a short delay
+            StartCoroutine(ReenableAgent(agent, 0.5f));
         }
 
-        // NEW — Trigger flee behaviour from the EnemyAI script
+        // Trigger flee behavior from EnemyAI
         GetComponentInParent<EnemyAI>()?.TriggerFlee();
 
         SwitchToHitSprite();
     }
 
+    private IEnumerator ReenableAgent(NavMeshAgent agent, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (agent != null) agent.enabled = true;
+    }
+
     private void SwitchToHitSprite()
     {
         if (isInHitState) return;
-
-        Debug.Log("Workeddd bitch");
 
         if (hitCoroutine != null)
         {
@@ -63,16 +78,10 @@ public class EnemyKnockback : MonoBehaviour
         }
 
         if (spriteOne != null)
-        {
             spriteOne.SetActive(false);
-            Debug.Log("Sprite1");
-        }
 
         if (spriteTwo != null)
-        {
             spriteTwo.SetActive(true);
-            Debug.Log("Sprite2");
-        }
 
         isInHitState = true;
         hitCoroutine = StartCoroutine(SwitchBackAfterDelay());
@@ -81,8 +90,6 @@ public class EnemyKnockback : MonoBehaviour
     private IEnumerator SwitchBackAfterDelay()
     {
         yield return new WaitForSeconds(hitDuration);
-
-        Debug.Log("Switching back to Sprite One");
 
         if (spriteTwo != null)
             spriteTwo.SetActive(false);
@@ -96,7 +103,6 @@ public class EnemyKnockback : MonoBehaviour
     [ContextMenu("Test")]
     public void TestSpriteSwitch()
     {
-        Debug.Log("Connor you did it you're a real hero you really fuccking did it holy shit");
         SwitchToHitSprite();
     }
 }

@@ -7,7 +7,8 @@ namespace Game.NavigationTutorial
 
     public class NPCComponent : MonoBehaviour
     {
-        protected NPC npc;
+        public NPC npc; 
+
 
 
         protected virtual void Awake()
