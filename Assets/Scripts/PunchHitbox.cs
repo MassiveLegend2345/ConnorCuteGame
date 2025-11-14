@@ -3,10 +3,15 @@ using UnityEngine;
 
 public class PunchyBox : MonoBehaviour
 {
+    [Header("Punch Settings")]
     [SerializeField] private float punchForce = 15f;
     [SerializeField] private float recoilForce = 10f;
     [SerializeField] private float punchDelay = 0.5f;
     [SerializeField] private FPSController player;
+
+    [Header("Score & Timer")]
+    [SerializeField] private int scoreAmount = 1;      // Points per punch
+    [SerializeField] private float timeAmount = 0.5f;  // Seconds added per punch
 
     public void Activate()
     {
@@ -24,6 +29,10 @@ public class PunchyBox : MonoBehaviour
         {
             if (other.CompareTag("Enemy"))
             {
+                // Add score and time
+                GameManager.Instance?.AddScore(scoreAmount);
+                GameManager.Instance?.AddTime(timeAmount);
+
                 EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
                 if (ek != null)
                 {

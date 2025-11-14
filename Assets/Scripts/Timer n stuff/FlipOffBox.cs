@@ -3,49 +3,47 @@ using UnityEngine;
 
 public class FlipOffBox : MonoBehaviour
 {
-    public float activeTime = 0.15f;
-    public float knockbackForce = 5f;
-    public int score = 5;
-    public float timeAdd = 1f;
+    [Header("Flip Off Settings")]
+    [SerializeField] private float knockbackForce = 5f;
+    [SerializeField] private float activeTime = 0.1f;
+    [SerializeField] private Collider hitboxCollider;  // assign in inspector
 
-    private Collider col;
-    private bool canHit = true;
-
-    private void Awake()
-    {
-        col = GetComponent<Collider>();
-        if (!col) col = gameObject.AddComponent<BoxCollider>();
-        col.isTrigger = true;
-        col.enabled = false; 
-    }
+    [Header("Score & Timer")]
+    [SerializeField] private int scoreAmount = 5;
+    [SerializeField] private float timeAmount = 1f;
 
     public void Activate()
     {
-        if (canHit)
-            StartCoroutine(HitRoutine());
+        // Make sure we run the coroutine even if the visual or collider is disabled
+        StartCoroutine(HandleFlipOff());
     }
 
-    private IEnumerator HitRoutine()
+    private IEnumerator HandleFlipOff()
     {
-        canHit = false;
-        col.enabled = true;
+        // Enable the collider for the duration
+        if (hitboxCollider != null) hitboxCollider.enabled = true;
 
         yield return new WaitForSeconds(activeTime);
 
-        col.enabled = false; 
-        canHit = true;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("Enemy")) return;
-        GameManager.Instance?.AddScore(score);
-        GameManager.Instance?.AddTime(timeAdd);
-        EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
-        if (ek != null)
+        // Detect enemies manually
+        Collider[] hits = Physics.OverlapBox(hitboxCollider.transform.position, hitboxCollider.bounds.extents);
+        foreach (Collider other in hits)
         {
-            Vector3 knockDir = (other.transform.position - transform.position).normalized + Vector3.up * 0.2f;
-            ek.Knockback(knockDir, knockbackForce);
+            if (other.CompareTag("Enemy"))
+            {
+                GameManager.Instance?.AddScore(scoreAmount);
+                GameManager.Instance?.AddTime(timeAmount);
+
+                EnemyKnockback ek = other.GetComponentInParent<EnemyKnockback>();
+                if (ek != null)
+                {
+                    Vector3 knockDir = (other.transform.position - transform.position).normalized;
+                    ek.Knockback(knockDir, knockbackForce);
+                }
+            }
         }
+
+        // Disable collider again
+        if (hitboxCollider != null) hitboxCollider.enabled = false;
     }
 }
