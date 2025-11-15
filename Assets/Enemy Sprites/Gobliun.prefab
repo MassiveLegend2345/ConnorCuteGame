@@ -252,8 +252,8 @@ MonoBehaviour:
   maxHits: 3
   respawnPoint: {fileID: 1193614102352139915}
   respawnDelay: 1
-  scorePerKill: 10
-  timePerKill: 2.5
+  scorePerKill: 11
+  timePerKill: 0
   killSpeedBoost: 3
   killPunchBoost: 0
   boostDuration: 8
@@ -271,7 +271,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1193614102352139915}
   m_Layer: 0
-  m_Name: 'Enemy '
+  m_Name: Gobliun
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

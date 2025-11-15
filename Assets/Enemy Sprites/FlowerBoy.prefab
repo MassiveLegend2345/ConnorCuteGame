@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7040398768863496342}
   m_Layer: 0
-  m_Name: Enemy (1)
+  m_Name: FlowerBoy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -415,8 +415,8 @@ MonoBehaviour:
   maxHits: 2
   respawnPoint: {fileID: 0}
   respawnDelay: 1
-  scorePerKill: 3
-  timePerKill: 5
+  scorePerKill: 1
+  timePerKill: 8
   killSpeedBoost: 3
   killPunchBoost: 0
   boostDuration: 8
