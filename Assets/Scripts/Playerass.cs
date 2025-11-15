@@ -36,6 +36,9 @@ public class FPSController : MonoBehaviour
     public float bobSpeed = 4.8f;
     public float bobAmount = 0.05f;
 
+    [Header("Boost Visual")]
+    public GameObject boostEffect; // drag particle system here
+
     private CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
@@ -135,15 +138,9 @@ public class FPSController : MonoBehaviour
         if (bobTimer > Mathf.PI * 2) bobTimer = 0;
     }
 
-    // --------------------------------------------------------------------
-    // -------------------------- WORKING PUNCH ---------------------------
-    // --------------------------------------------------------------------
-
     private IEnumerator DoPunch()
     {
         canPunch = false;
-
-        // (optional visual)
         if (punchHitbox != null)
             punchHitbox.SetActive(true);
 
@@ -155,7 +152,6 @@ public class FPSController : MonoBehaviour
 
         if (Physics.Raycast(origin, dir, out hit, punchRange))
         {
-            // --- Knockback ---
             EnemyKnockback ek = hit.collider.GetComponentInParent<EnemyKnockback>();
             if (ek != null)
             {
@@ -165,7 +161,6 @@ public class FPSController : MonoBehaviour
                 ek.Knockback(knockDir, punchForce);
             }
 
-            // --- Damage ---
             EnemyHealth eh = hit.collider.GetComponentInParent<EnemyHealth>();
             if (eh != null)
             {
@@ -175,7 +170,6 @@ public class FPSController : MonoBehaviour
             }
             else
             {
-                // Hit non-enemy rigidbody
                 Rigidbody rb = hit.collider.attachedRigidbody;
                 if (rb != null)
                     rb.AddForce((hit.point - transform.position).normalized * punchForce, ForceMode.Impulse);
@@ -185,10 +179,8 @@ public class FPSController : MonoBehaviour
         }
 
         yield return new WaitForSeconds(punchCooldown);
-
         if (punchHitbox != null)
             punchHitbox.SetActive(false);
-
         canPunch = true;
     }
 
@@ -204,10 +196,6 @@ public class FPSController : MonoBehaviour
             yield return null;
         }
     }
-
-    // --------------------------------------------------------------------
-    // ----------------------------- DASH ---------------------------------
-    // --------------------------------------------------------------------
 
     private IEnumerator Dash()
     {

@@ -12,7 +12,7 @@ public class FlipOffBox : MonoBehaviour
     public AudioClip[] hitSounds;
     public AudioSource audioSource;
 
-    public float cooldown = 1.7f; // 1.7 second delay between flips
+    public float cooldown = 1.7f;
     private bool canFlip = true;
 
     private int currentSoundIndex = 0;
@@ -32,7 +32,7 @@ public class FlipOffBox : MonoBehaviour
 
     private IEnumerator FlipRoutine()
     {
-        canFlip = false; // start cooldown
+        canFlip = false;
         col.enabled = true;
 
         yield return new WaitForSeconds(0.1f);
@@ -59,13 +59,10 @@ public class FlipOffBox : MonoBehaviour
         }
 
         if (hitSomething)
-        {
             PlayHitSound();
-        }
 
         col.enabled = false;
 
-        // wait for cooldown before allowing next flip
         yield return new WaitForSeconds(cooldown);
         canFlip = true;
     }

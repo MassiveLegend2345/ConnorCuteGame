@@ -1,138 +1,174 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class EnemyHealth : MonoBehaviour
 {
     [Header("Health")]
-    public int maxHealth = 3;
-    public float respawnDelay = 2f;
+    public int maxHits = 3;
+    private int currentHits = 0;
 
-    [Header("Invulnerability")]
-    public float invulTime = 0.15f; // short invul to avoid duplicate triggers
+    [Header("Respawn")]
+    public Transform respawnPoint;
+    public float respawnDelay = 1f;
 
-    private int currentHealth;
-    private Vector3 spawnPoint;
-    private NavMeshAgent agent;
+    [Header("Kill Rewards")]
+    public int scorePerKill = 10;
+    public float timePerKill = 2f;
+
+    [Header("Player Boost")]
+    public float killSpeedBoost = 1.5f;
+    public float killPunchBoost = 1.5f;
+    public float boostDuration = 3f;
+
+    [Header("Visuals")]
+    public GameObject pointsPopupPrefab;  // assign PointsPopup prefab
+    public string pointsText = "+10";
+    public Image screenFlash; // assign full-screen UI Image (red/orange) for flash
+    public float flashDuration = 0.3f;
+
+    [Header("Components")]
     private Rigidbody rb;
-    private Collider[] colliders;
-    private Renderer[] renderers;
-    private bool isDead = false;
-    private bool isInvulnerable = false;
+    private NavMeshAgent agent;
+    private Collider col;
 
     private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
         rb = GetComponent<Rigidbody>();
-        colliders = GetComponentsInChildren<Collider>();
-        renderers = GetComponentsInChildren<Renderer>();
-        spawnPoint = transform.position;
-    }
-
-    private void OnEnable()
-    {
-        currentHealth = maxHealth;
-        isDead = false;
-        isInvulnerable = false;
-        EnableVisualsAndColliders(true);
+        agent = GetComponent<NavMeshAgent>();
+        col = GetComponent<Collider>();
     }
 
     public void TakeHit()
     {
-        if (isDead)
-        {
-            Debug.Log($"[{name}] TakeHit ignored - already dead");
-            return;
-        }
+        currentHits++;
 
-        if (isInvulnerable)
-        {
-            Debug.Log($"[{name}] TakeHit ignored - invulnerable");
-            return;
-        }
-
-        currentHealth--;
-        Debug.Log($"[{name}] Took hit. Remaining HP: {currentHealth}");
-
-        // short invulnerability so multiple colliders/punches in same frame won't double-hit
-        if (invulTime > 0f)
-            StartCoroutine(InvulCoroutine());
-
-        if (currentHealth <= 0)
-        {
-            StartCoroutine(DieAndRespawn());
-        }
+        if (currentHits >= maxHits)
+            StartCoroutine(RespawnEnemy());
     }
 
-    private IEnumerator InvulCoroutine()
+    private IEnumerator RespawnEnemy()
     {
-        isInvulnerable = true;
-        yield return new WaitForSeconds(invulTime);
-        isInvulnerable = false;
-    }
+        // Reward player
+        GameManager.Instance?.AddScore(scorePerKill);
+        GameManager.Instance?.AddTime(timePerKill);
 
-    private IEnumerator DieAndRespawn()
-    {
-        isDead = true;
-        Debug.Log($"[{name}] Died. Respawning in {respawnDelay} seconds.");
-
-        // Disable visuals & nav/collider/physics but keep object active so scripts remain safe
-        EnableVisualsAndColliders(false);
-
-        // stop velocity
-        if (rb != null)
+        // Spawn PointsPopup on canvas
+        if (pointsPopupPrefab != null && PointsCanvas.instance != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            GameObject popup = Instantiate(pointsPopupPrefab, PointsCanvas.instance.transform);
+            PointsPopup pp = popup.GetComponent<PointsPopup>();
+            if (pp != null)
+                pp.Setup(pointsText, transform.position + Vector3.up * 2f, Camera.main);
         }
 
-        // Optionally disable NavMeshAgent so it doesn't try to path while "dead"
-        if (agent != null)
-            agent.enabled = false;
+        // Player boost + visuals
+        FPSController player = FindObjectOfType<FPSController>();
+        if (player != null)
+            StartCoroutine(PlayerKillBoost(player));
+
+        // Hide enemy components
+        if (agent != null) agent.enabled = false;
+        if (rb != null) rb.isKinematic = true;
+        if (col != null) col.enabled = false;
+
+        // Hide visuals
+        Transform spriteParent = transform.Find("Sprites");
+        if (spriteParent != null)
+        {
+            foreach (Transform child in spriteParent)
+                child.gameObject.SetActive(false);
+        }
 
         yield return new WaitForSeconds(respawnDelay);
 
-        // Respawn: reset position, enable agent, reset health
-        transform.position = spawnPoint;
+        // Reset HP
+        currentHits = 0;
 
-        if (agent != null)
+        // Warp agent to respawn
+        if (agent != null && respawnPoint != null)
+            agent.Warp(respawnPoint.position);
+        else if (respawnPoint != null)
+            transform.position = respawnPoint.position;
+
+        // Re-enable components
+        if (agent != null) agent.enabled = true;
+        if (rb != null) rb.isKinematic = false;
+        if (col != null) col.enabled = true;
+
+        // Re-enable visuals
+        if (spriteParent != null)
         {
-            agent.enabled = true;
-            // Warp to spawn to avoid NavMeshAgent complaints
-            agent.Warp(spawnPoint);
-        }
-
-        currentHealth = maxHealth;
-        isDead = false;
-        isInvulnerable = false;
-
-        EnableVisualsAndColliders(true);
-        Debug.Log($"[{name}] Respawned.");
-    }
-
-    private void EnableVisualsAndColliders(bool enable)
-    {
-        // toggle all colliders on children (including root)
-        if (colliders != null)
-        {
-            foreach (var c in colliders)
-            {
-                // leave triggers (like hurtboxes) enabled if you want; this toggles all for simplicity
-                c.enabled = enable;
-            }
-        }
-
-        // toggle visual renderers
-        if (renderers != null)
-        {
-            foreach (var r in renderers)
-                r.enabled = enable;
+            foreach (Transform child in spriteParent)
+                child.gameObject.SetActive(true);
         }
     }
 
-    // helper to set spawn externally if you instantiate
-    public void SetSpawnPoint(Vector3 pos)
+    private IEnumerator PlayerKillBoost(FPSController player)
     {
-        spawnPoint = pos;
+        // Enable boost particle
+        if (player.boostEffect != null)
+            player.boostEffect.SetActive(true);
+
+        // Boost stats
+        player.runningSpeed *= killSpeedBoost;
+        player.walkingSpeed *= killSpeedBoost;
+        player.punchForce *= killPunchBoost;
+
+        // Screen flash
+        if (screenFlash != null)
+            StartCoroutine(ScreenFlashRoutine(screenFlash, flashDuration));
+
+        // Camera shake
+        if (player.playerCamera != null)
+            StartCoroutine(CameraShake(player.playerCamera.transform, 0.2f, 0.1f));
+
+        yield return new WaitForSeconds(boostDuration);
+
+        // Reset stats
+        player.runningSpeed /= killSpeedBoost;
+        player.walkingSpeed /= killSpeedBoost;
+        player.punchForce /= killPunchBoost;
+
+        // Disable particle
+        if (player.boostEffect != null)
+            player.boostEffect.SetActive(false);
+    }
+
+    private IEnumerator ScreenFlashRoutine(Image flashImage, float duration)
+    {
+        flashImage.gameObject.SetActive(true);
+        float elapsed = 0f;
+        Color c = flashImage.color;
+        c.a = 0.5f; // max alpha
+        flashImage.color = c;
+
+        while (elapsed < duration)
+        {
+            c.a = Mathf.Lerp(0.5f, 0f, elapsed / duration);
+            flashImage.color = c;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        flashImage.gameObject.SetActive(false);
+    }
+
+    private IEnumerator CameraShake(Transform cam, float duration, float magnitude)
+    {
+        Vector3 originalPos = cam.localPosition;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+            cam.localPosition = originalPos + new Vector3(x, y, 0);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        cam.localPosition = originalPos;
     }
 }
