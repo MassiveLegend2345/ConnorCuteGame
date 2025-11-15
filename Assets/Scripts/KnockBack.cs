@@ -44,9 +44,12 @@ public class EnemyKnockback : MonoBehaviour
     public void RefreshRigidbody()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            rb = GetComponentInChildren<Rigidbody>(); // Also check children
+
         if (rb != null)
         {
-            rb.isKinematic = false;
+            rb.isKinematic = false; // MUST BE FALSE
             rb.useGravity = true;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         }

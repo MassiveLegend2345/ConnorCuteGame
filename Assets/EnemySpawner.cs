@@ -15,13 +15,16 @@ public class EnemySpawner : MonoBehaviour
     public float respawnDelay = 2f;
 
     [Header("Screen Flash")]
-    public Image screenFlash; // Drag your Canvas Image here!
+    public Image screenFlash;
 
     private int currentEnemies = 0;
     private bool isSpawning = true;
+    private Coroutine currentBoostCoroutine;
+    private FPSController player;
 
     void Start()
     {
+        player = FindObjectOfType<FPSController>();
         for (int i = 0; i < maxEnemies; i++)
             SpawnEnemy();
 
@@ -47,8 +50,58 @@ public class EnemySpawner : MonoBehaviour
         GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         currentEnemies++;
 
-        // Start tracking this enemy's life
+        // ENSURE the new enemy is properly set up for knockback
+        SetupNewEnemy(enemy);
+
         StartCoroutine(HandleEnemyLife(enemy));
+    }
+
+    // NEW: Ensure new enemies are properly set up for knockback
+    private void SetupNewEnemy(GameObject enemy)
+    {
+        // Get the Rigidbody from the Hitbox child
+        Rigidbody rb = enemy.GetComponentInChildren<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false; // CRITICAL: Must be false for knockback
+            rb.useGravity = true;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // Enable NavMeshAgent
+        NavMeshAgent agent = enemy.GetComponentInChildren<NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.enabled = true;
+            agent.isStopped = false;
+        }
+
+        // Enable Collider
+        Collider col = enemy.GetComponentInChildren<Collider>();
+        if (col != null)
+        {
+            col.enabled = true;
+        }
+
+        // Reset sprite to normal state
+        EnemyKnockback ek = enemy.GetComponentInChildren<EnemyKnockback>();
+        if (ek != null)
+        {
+            if (ek.spriteOne != null) ek.spriteOne.SetActive(true);
+            if (ek.spriteTwo != null) ek.spriteTwo.SetActive(false);
+            ek.RefreshRigidbody(); // Refresh the Rigidbody reference
+        }
+
+        // Reset health
+        EnemyHealth eh = enemy.GetComponentInChildren<EnemyHealth>();
+        if (eh != null)
+        {
+            eh.currentHits = 0;
+        }
+
+        Debug.Log("New enemy spawned and set up for knockback!");
     }
 
     private IEnumerator HandleEnemyLife(GameObject enemy)
@@ -56,18 +109,13 @@ public class EnemySpawner : MonoBehaviour
         EnemyHealth eh = enemy.GetComponentInChildren<EnemyHealth>();
         if (eh == null) yield break;
 
-        // Reset health when spawning
         eh.currentHits = 0;
 
-        // Wait until enemy is dead - FIXED VERSION
         while (!eh.IsDead())
         {
-            yield return null; // Wait one frame and check again
+            yield return null;
         }
 
-        Debug.Log("Enemy died! Processing death effects...");
-
-        // FREEZE THE ENEMY!
         FreezeEnemy(enemy);
 
         // Reward player
@@ -78,10 +126,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // Player boost
-        FPSController player = FindObjectOfType<FPSController>();
         if (player != null)
         {
-            Debug.Log("Starting player boost...");
             StartCoroutine(PlayerKillBoost(player, eh));
         }
 
@@ -97,23 +143,18 @@ public class EnemySpawner : MonoBehaviour
         // SCREEN FLASH
         if (screenFlash != null)
         {
-            Debug.Log("Starting screen flash...");
             StartCoroutine(DoScreenFlash(0.7f));
         }
 
         yield return new WaitForSeconds(respawnDelay);
 
-        // Destroy dead enemy
         Destroy(enemy);
         currentEnemies--;
-
-        // Spawn a fresh one
         SpawnEnemy();
     }
 
     private void FreezeEnemy(GameObject enemy)
     {
-        // Freeze Rigidbody
         Rigidbody rb = enemy.GetComponentInChildren<Rigidbody>();
         if (rb != null)
         {
@@ -122,7 +163,6 @@ public class EnemySpawner : MonoBehaviour
             rb.isKinematic = true;
         }
 
-        // Disable AI
         NavMeshAgent agent = enemy.GetComponentInChildren<NavMeshAgent>();
         if (agent != null)
         {
@@ -130,14 +170,12 @@ public class EnemySpawner : MonoBehaviour
             agent.enabled = false;
         }
 
-        // Disable collider
         Collider col = enemy.GetComponentInChildren<Collider>();
         if (col != null)
         {
             col.enabled = false;
         }
 
-        // Switch to hit sprite
         EnemyKnockback ek = enemy.GetComponentInChildren<EnemyKnockback>();
         if (ek != null)
         {
@@ -148,42 +186,57 @@ public class EnemySpawner : MonoBehaviour
 
     private IEnumerator PlayerKillBoost(FPSController player, EnemyHealth eh)
     {
-        Debug.Log("Player boost started!");
+        if (currentBoostCoroutine != null)
+        {
+            StopCoroutine(currentBoostCoroutine);
+            ResetPlayerSpeed(player);
+        }
 
         if (player.boostEffect != null)
             player.boostEffect.SetActive(true);
 
-        float origRun = player.runningSpeed;
-        float origWalk = player.walkingSpeed;
-        float origPunch = player.punchForce;
+        float baseRunSpeed = 11.5f;
+        float baseWalkSpeed = 7.5f;
+        float basePunchForce = 15f;
 
-        player.runningSpeed *= eh.killSpeedBoost;
-        player.walkingSpeed *= eh.killSpeedBoost;
-        player.punchForce *= eh.killPunchBoost;
+        player.runningSpeed = baseRunSpeed * eh.killSpeedBoost;
+        player.walkingSpeed = baseWalkSpeed * eh.killSpeedBoost;
+        player.punchForce = basePunchForce * eh.killPunchBoost;
 
-        Debug.Log($"Speed boosted! Run: {player.runningSpeed}, Walk: {player.walkingSpeed}");
-
-        // Camera shake
         if (player.playerCamera != null)
             StartCoroutine(CameraShake(player.playerCamera.transform, 0.2f, 0.1f));
 
-        yield return new WaitForSeconds(eh.boostDuration);
+        currentBoostCoroutine = StartCoroutine(BoostTimer(player, eh.boostDuration, baseRunSpeed, baseWalkSpeed, basePunchForce));
+        yield return currentBoostCoroutine;
+    }
 
-        player.runningSpeed = origRun;
-        player.walkingSpeed = origWalk;
-        player.punchForce = origPunch;
+    private IEnumerator BoostTimer(FPSController player, float duration, float baseRun, float baseWalk, float basePunch)
+    {
+        yield return new WaitForSeconds(duration);
+
+        player.runningSpeed = baseRun;
+        player.walkingSpeed = baseWalk;
+        player.punchForce = basePunch;
 
         if (player.boostEffect != null)
             player.boostEffect.SetActive(false);
 
-        Debug.Log("Player boost ended!");
+        currentBoostCoroutine = null;
+    }
+
+    private void ResetPlayerSpeed(FPSController player)
+    {
+        player.runningSpeed = 11.5f;
+        player.walkingSpeed = 7.5f;
+        player.punchForce = 15f;
+
+        if (player.boostEffect != null)
+            player.boostEffect.SetActive(false);
     }
 
     private IEnumerator DoScreenFlash(float duration)
     {
         if (screenFlash == null) yield break;
-
-        Debug.Log("Screen flash started!");
 
         screenFlash.gameObject.SetActive(true);
         Color flashColor = screenFlash.color;
@@ -203,8 +256,6 @@ public class EnemySpawner : MonoBehaviour
         flashColor.a = 0f;
         screenFlash.color = flashColor;
         screenFlash.gameObject.SetActive(false);
-
-        Debug.Log("Screen flash ended!");
     }
 
     private IEnumerator CameraShake(Transform cam, float duration, float magnitude)
