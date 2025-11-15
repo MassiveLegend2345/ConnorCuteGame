@@ -4,40 +4,43 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
 {
+    [Header("Movement")]
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float jumpSpeed = 8f;
     public float secondJS = 6f;
     public float gravity = 20f;
 
+    [Header("Mouse Look")]
     public float lookSpeed = 2f;
     public float lookXLimit = 45f;
     public Camera playerCamera;
     public Transform camera;
     public Vector3 restPosition;
 
-    // --- Punch Settings ---
+    [Header("Punch")]
     public GameObject punchHitbox;
     public float punchRange = 2f;
     public float punchForce = 15f;
     public float punchRecoil = 8f;
-    public float punchDelay = 0.5f;
+    public float punchDelay = 0.1f;
     public float punchCooldown = 0.3f;
 
+    [Header("Flip Off")]
     public FlipOffBox flipOffHitbox;
 
-    // --- Dash ---
+    [Header("Dash")]
     public float dashSpeed = 50f;
     public float dashDuration = 0.15f;
     public float dashCooldown = 0.4f;
     public float dashVerticalBoost = 2f;
 
-    // --- Camera Bob ---
+    [Header("Camera Bob")]
     public float bobSpeed = 4.8f;
     public float bobAmount = 0.05f;
 
     [Header("Boost Visual")]
-    public GameObject boostEffect; // drag particle system here
+    public GameObject boostEffect;
 
     private CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
@@ -152,21 +155,19 @@ public class FPSController : MonoBehaviour
 
         if (Physics.Raycast(origin, dir, out hit, punchRange))
         {
-            EnemyKnockback ek = hit.collider.GetComponentInParent<EnemyKnockback>();
-            if (ek != null)
-            {
-                Vector3 knockDir = (hit.point - transform.position);
-                knockDir.y = 0f;
-                knockDir = knockDir.normalized + Vector3.up * 0.2f;
-                ek.Knockback(knockDir, punchForce);
-            }
-
             EnemyHealth eh = hit.collider.GetComponentInParent<EnemyHealth>();
             if (eh != null)
             {
+                // Apply knockback BEFORE taking hit (so it works even if enemy dies)
+                EnemyKnockback ek = hit.collider.GetComponentInParent<EnemyKnockback>();
+                if (ek != null)
+                {
+                    Vector3 knockDir = (hit.point - transform.position).normalized;
+                    knockDir.y = 0.2f;
+                    ek.Knockback(knockDir, punchForce, true);
+                }
+
                 eh.TakeHit();
-                GameManager.Instance?.AddScore(1);
-                GameManager.Instance?.AddTime(0.5f);
             }
             else
             {

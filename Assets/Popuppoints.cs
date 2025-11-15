@@ -1,44 +1,48 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
 public class PointsPopup : MonoBehaviour
 {
-    public float floatSpeed = 50f;  // pixels per second
-    public float lifetime = 1f;
+    public TextMeshProUGUI textMesh;
+    public float duration = 1f;
 
-    private TextMeshProUGUI tmp;
-    private RectTransform rect;
+    private Vector3 worldPosition;
+    private Camera mainCam;
 
-    private void Awake()
+    public void Setup(string text, Vector3 worldPos, Camera cam)
     {
-        tmp = GetComponentInChildren<TextMeshProUGUI>();
-        rect = GetComponent<RectTransform>();
+        if (textMesh != null)
+            textMesh.text = text;
+
+        worldPosition = worldPos;
+        mainCam = cam;
+
+        StartCoroutine(MoveAndFade());
     }
 
-    /// <summary>
-    /// Sets the text and positions it on screen over the world position
-    /// </summary>
-    public void Setup(string text, Vector3 worldPosition, Camera cam)
+    private IEnumerator MoveAndFade()
     {
-        if (tmp != null)
-            tmp.text = text;
+        float elapsed = 0f;
+        CanvasGroup cg = GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = gameObject.AddComponent<CanvasGroup>();
 
-        if (cam != null && rect != null)
-            rect.position = cam.WorldToScreenPoint(worldPosition);
-
-        Destroy(gameObject, lifetime);
-    }
-
-    private void Update()
-    {
-        if (rect != null)
-            rect.position += Vector3.up * floatSpeed * Time.deltaTime;
-
-        if (tmp != null)
+        while (elapsed < duration)
         {
-            Color c = tmp.color;
-            c.a -= Time.deltaTime / lifetime;
-            tmp.color = c;
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            // Move the popup upwards over time
+            if (mainCam != null)
+                transform.position = mainCam.WorldToScreenPoint(Vector3.Lerp(worldPosition, worldPosition + Vector3.up, t));
+
+            // Fade out
+            cg.alpha = 1f - t;
+
+            yield return null;
         }
+
+        Destroy(gameObject);
     }
 }

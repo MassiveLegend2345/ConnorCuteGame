@@ -4,74 +4,69 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
- 
-    public float wanderRadius = 10f;
+    [Header("Wander Settings")]
+    public float wanderRadius = 5f;
     public float wanderInterval = 3f;
-    public float wanderSpeed = 2f;
 
-    public float fleeDuration = 2f;
-    public float fleeSpeed = 6f;
+    private NavMeshAgent agent;
+    private Coroutine wanderRoutine;
 
-    public bool knockedBack = false;
-
-    public NavMeshAgent npc;
-    private Transform player;
-
-    private bool isFleeing = false;
-
-    void Start()
+    private void Awake()
     {
-        if (npc == null) npc = GetComponent<NavMeshAgent>();
-        player = GameObject.FindGameObjectWithTag("Player").transform;
-        npc.speed = wanderSpeed;
-        StartCoroutine(WanderRoutine());
+        agent = GetComponent<NavMeshAgent>();
+        if (agent == null)
+        {
+            Debug.LogError("NavMeshAgent component missing on Enemy!");
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (wanderRoutine != null) StopCoroutine(wanderRoutine);
+        wanderRoutine = StartCoroutine(WanderRoutine());
+    }
+
+    private void OnDisable()
+    {
+        if (wanderRoutine != null) StopCoroutine(wanderRoutine);
     }
 
     private IEnumerator WanderRoutine()
     {
         while (true)
         {
-            if (!isFleeing && !knockedBack)
+            // Wait until agent is enabled and on NavMesh
+            while (agent == null || !agent.enabled || !agent.isOnNavMesh)
             {
-                Vector3 newPos = GetRandomWanderPosition();
-                npc.SetDestination(newPos);
+                yield return null;
             }
+
+            // Pick a random point within wander radius
+            Vector3 randomDirection = Random.insideUnitSphere * wanderRadius;
+            randomDirection += transform.position;
+
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(randomDirection, out hit, wanderRadius, NavMesh.AllAreas))
+            {
+                // Wait a frame after warp to avoid SetDestination errors
+                agent.SetDestination(hit.position);
+            }
+
             yield return new WaitForSeconds(wanderInterval);
         }
     }
 
-    private Vector3 GetRandomWanderPosition()
+    /// <summary>
+    /// Force agent to a position safely (for respawn)
+    /// </summary>
+    public void WarpToPosition(Vector3 targetPosition)
     {
-        Vector3 randomDir = Random.insideUnitSphere * wanderRadius + transform.position;
+        if (agent == null) return;
+
         NavMeshHit hit;
-        NavMesh.SamplePosition(randomDir, out hit, wanderRadius, NavMesh.AllAreas);
-        return hit.position;
-    }
-
-    public void TriggerFlee()
-    {
-        if (isFleeing) return;
-        StartCoroutine(FleeRoutine());
-    }
-
-    private IEnumerator FleeRoutine()
-    {
-        isFleeing = true;
-        npc.speed = fleeSpeed;
-
-        float timer = 0f;
-        while (timer < fleeDuration)
+        if (NavMesh.SamplePosition(targetPosition, out hit, 1f, NavMesh.AllAreas))
         {
-            if (!knockedBack)
-            {
-                Vector3 fleeDir = (transform.position - player.position).normalized;
-                npc.SetDestination(transform.position + fleeDir * 12f);
-            }
-            timer += Time.deltaTime;
-            yield return null;
+            agent.Warp(hit.position);
         }
-
-        npc.speed = wanderSpeed;
-        isFleeing = false;
     }
 }
