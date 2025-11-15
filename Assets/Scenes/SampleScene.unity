@@ -4408,8 +4408,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b82a7ee3bef5756489ec09f13c52f805, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkingSpeed: 4
-  runningSpeed: 8
+  walkingSpeed: 6
+  runningSpeed: 9
   jumpSpeed: 8
   secondJS: 6
   gravity: 13
@@ -7953,7 +7953,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e60bd1f47779adb47a1f3a55456b825e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  punchForce: 15
+  punchForce: 12
 --- !u!65 &1250722889
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8258,7 +8258,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 7659846303502320098, guid: abeaff9515912544f9cb375ae2117bdf, type: 3}
   spawnRadius: 30
-  maxEnemies: 1
+  maxEnemies: 2
   spawnInterval: 3
   respawnDelay: 2
   screenFlash: {fileID: 1133513779}
@@ -8546,9 +8546,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 430208265da9a0f4583184f1fb4f4593, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 7153079807410063018, guid: 83723172a6cd00c49a6310737abb522d, type: 3}
-  spawnRadius: 10
-  maxEnemies: 1
+  enemyPrefab: {fileID: 1004360034431878322, guid: 83723172a6cd00c49a6310737abb522d, type: 3}
+  spawnRadius: 30
+  maxEnemies: 2
   spawnInterval: 3
   respawnDelay: 2
   screenFlash: {fileID: 1133513779}
