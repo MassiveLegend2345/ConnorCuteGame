@@ -10,28 +10,31 @@ public class EnemyKnockback : MonoBehaviour
     [Header("Sprites")]
     public GameObject spriteOne;
     public GameObject spriteTwo;
+    public GameObject explosionSprite; // Drag your explosion sprite here
     public float hitDuration = 0.5f;
 
     [Header("Audio")]
     public AudioClip[] hitSounds;
     public AudioClip[] punchSounds;
+    public AudioClip explosionSound; // Drag your explosion SFX here
     public AudioSource audioSource;
 
     private int currentHitSound = 0;
     private int currentPunchSound = 0;
-
     private Rigidbody rb;
     private Coroutine hitCoroutine;
     private bool isInHitState = false;
-    private EnemyHealth enemyHealth; // Reference to health to check if dead
+    private EnemyHealth enemyHealth;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        enemyHealth = GetComponent<EnemyHealth>(); // Get health component
+        enemyHealth = GetComponent<EnemyHealth>();
 
+        // Set initial sprite - explosion sprite starts disabled
         if (spriteOne != null) spriteOne.SetActive(true);
         if (spriteTwo != null) spriteTwo.SetActive(false);
+        if (explosionSprite != null) explosionSprite.SetActive(false);
 
         if (audioSource == null)
         {
@@ -44,12 +47,9 @@ public class EnemyKnockback : MonoBehaviour
     public void RefreshRigidbody()
     {
         rb = GetComponent<Rigidbody>();
-        if (rb == null)
-            rb = GetComponentInChildren<Rigidbody>(); // Also check children
-
         if (rb != null)
         {
-            rb.isKinematic = false; // MUST BE FALSE
+            rb.isKinematic = false;
             rb.useGravity = true;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         }
@@ -57,7 +57,6 @@ public class EnemyKnockback : MonoBehaviour
 
     public void Knockback(Vector3 direction, float force, bool isPunch = false)
     {
-        // CHECK IF ENEMY IS DEAD - if so, don't apply knockback!
         if (enemyHealth != null && enemyHealth.IsDead())
             return;
 
@@ -75,6 +74,21 @@ public class EnemyKnockback : MonoBehaviour
 
         if (isPunch) PlayPunchSound();
         PlayHitSound();
+    }
+
+    // NEW: Show explosion sprite and play SFX when enemy dies
+    public void TriggerExplosion()
+    {
+        // Switch to explosion sprite
+        if (spriteOne != null) spriteOne.SetActive(false);
+        if (spriteTwo != null) spriteTwo.SetActive(false);
+        if (explosionSprite != null) explosionSprite.SetActive(true);
+
+        // Play explosion sound
+        if (explosionSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(explosionSound);
+        }
     }
 
     private void PlayHitSound()
@@ -107,7 +121,6 @@ public class EnemyKnockback : MonoBehaviour
     {
         yield return new WaitForSeconds(hitDuration);
 
-        // Don't switch back if enemy is dead
         if (enemyHealth != null && enemyHealth.IsDead())
             yield break;
 

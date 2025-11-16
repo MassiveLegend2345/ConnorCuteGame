@@ -17,6 +17,13 @@ public class EnemySpawner : MonoBehaviour
     [Header("Screen Flash")]
     public Image screenFlash;
 
+    [Header("Kill Rewards")]
+    public int scorePerKill = 10;
+    public float timePerKill = 2f;
+    public float killSpeedBoost = 1.5f;
+    public float killPunchBoost = 1.5f;
+    public float boostDuration = 3f;
+
     private int currentEnemies = 0;
     private bool isSpawning = true;
     private Coroutine currentBoostCoroutine;
@@ -50,58 +57,50 @@ public class EnemySpawner : MonoBehaviour
         GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         currentEnemies++;
 
-        // ENSURE the new enemy is properly set up for knockback
-        SetupNewEnemy(enemy);
+        // RESET THE ENEMY PROPERLY
+        ResetEnemy(enemy);
 
         StartCoroutine(HandleEnemyLife(enemy));
     }
 
-    // NEW: Ensure new enemies are properly set up for knockback
-    private void SetupNewEnemy(GameObject enemy)
+    // NEW: Properly reset enemy state
+    private void ResetEnemy(GameObject enemy)
     {
-        // Get the Rigidbody from the Hitbox child
-        Rigidbody rb = enemy.GetComponentInChildren<Rigidbody>();
-        if (rb != null)
+        // Reset health
+        EnemyHealth eh = enemy.GetComponentInChildren<EnemyHealth>();
+        if (eh != null)
         {
-            rb.isKinematic = false; // CRITICAL: Must be false for knockback
-            rb.useGravity = true;
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            eh.currentHits = 0; // Make sure health is reset
         }
 
-        // Enable NavMeshAgent
-        NavMeshAgent agent = enemy.GetComponentInChildren<NavMeshAgent>();
-        if (agent != null)
-        {
-            agent.enabled = true;
-            agent.isStopped = false;
-        }
-
-        // Enable Collider
-        Collider col = enemy.GetComponentInChildren<Collider>();
-        if (col != null)
-        {
-            col.enabled = true;
-        }
-
-        // Reset sprite to normal state
+        // Reset knockback sprites
         EnemyKnockback ek = enemy.GetComponentInChildren<EnemyKnockback>();
         if (ek != null)
         {
             if (ek.spriteOne != null) ek.spriteOne.SetActive(true);
             if (ek.spriteTwo != null) ek.spriteTwo.SetActive(false);
-            ek.RefreshRigidbody(); // Refresh the Rigidbody reference
+            if (ek.explosionSprite != null) ek.explosionSprite.SetActive(false);
         }
 
-        // Reset health
-        EnemyHealth eh = enemy.GetComponentInChildren<EnemyHealth>();
-        if (eh != null)
+        // Enable components
+        Rigidbody rb = enemy.GetComponentInChildren<Rigidbody>();
+        if (rb != null)
         {
-            eh.currentHits = 0;
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
         }
 
-        Debug.Log("New enemy spawned and set up for knockback!");
+        NavMeshAgent agent = enemy.GetComponentInChildren<NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.enabled = true;
+        }
+
+        Collider col = enemy.GetComponentInChildren<Collider>();
+        if (col != null)
+        {
+            col.enabled = true;
+        }
     }
 
     private IEnumerator HandleEnemyLife(GameObject enemy)
@@ -109,41 +108,41 @@ public class EnemySpawner : MonoBehaviour
         EnemyHealth eh = enemy.GetComponentInChildren<EnemyHealth>();
         if (eh == null) yield break;
 
-        eh.currentHits = 0;
-
+        // Wait until enemy is dead
         while (!eh.IsDead())
         {
             yield return null;
         }
 
-        FreezeEnemy(enemy);
+        Debug.Log("Enemy died! Triggering explosion...");
 
-        // Reward player
-        if (GameManager.Instance != null)
+        // TRIGGER EXPLOSION
+        EnemyKnockback ek = enemy.GetComponentInChildren<EnemyKnockback>();
+        if (ek != null)
         {
-            GameManager.Instance.AddScore(eh.scorePerKill);
-            GameManager.Instance.AddTime(eh.timePerKill);
+            ek.TriggerExplosion();
         }
 
-        // Player boost
+        // REWARD PLAYER
+        GameManager.Instance?.AddScore(scorePerKill);
+        GameManager.Instance?.AddTime(timePerKill);
+
+        // PLAYER BOOST
         if (player != null)
         {
-            StartCoroutine(PlayerKillBoost(player, eh));
-        }
-
-        // Show points popup
-        if (eh.pointsPopupPrefab != null && PointsCanvas.instance != null)
-        {
-            GameObject popup = Instantiate(eh.pointsPopupPrefab, PointsCanvas.instance.transform);
-            PointsPopup pp = popup.GetComponent<PointsPopup>();
-            if (pp != null)
-                pp.Setup(eh.pointsText, enemy.transform.position + Vector3.up * 2f, Camera.main);
+            StartCoroutine(PlayerKillBoost(player));
         }
 
         // SCREEN FLASH
         if (screenFlash != null)
         {
-            StartCoroutine(DoScreenFlash(0.7f));
+            StartCoroutine(DoScreenFlash());
+        }
+
+        // SCREEN SHAKE
+        if (player != null && player.playerCamera != null)
+        {
+            StartCoroutine(CameraShake(player.playerCamera.transform, 0.2f, 0.1f));
         }
 
         yield return new WaitForSeconds(respawnDelay);
@@ -153,88 +152,49 @@ public class EnemySpawner : MonoBehaviour
         SpawnEnemy();
     }
 
-    private void FreezeEnemy(GameObject enemy)
+    private IEnumerator PlayerKillBoost(FPSController player)
     {
-        Rigidbody rb = enemy.GetComponentInChildren<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;
-        }
+        Debug.Log("Starting player boost!");
 
-        NavMeshAgent agent = enemy.GetComponentInChildren<NavMeshAgent>();
-        if (agent != null)
-        {
-            agent.isStopped = true;
-            agent.enabled = false;
-        }
-
-        Collider col = enemy.GetComponentInChildren<Collider>();
-        if (col != null)
-        {
-            col.enabled = false;
-        }
-
-        EnemyKnockback ek = enemy.GetComponentInChildren<EnemyKnockback>();
-        if (ek != null)
-        {
-            if (ek.spriteOne != null) ek.spriteOne.SetActive(false);
-            if (ek.spriteTwo != null) ek.spriteTwo.SetActive(true);
-        }
-    }
-
-    private IEnumerator PlayerKillBoost(FPSController player, EnemyHealth eh)
-    {
+        // Stop any existing boost
         if (currentBoostCoroutine != null)
         {
             StopCoroutine(currentBoostCoroutine);
-            ResetPlayerSpeed(player);
         }
 
+        // Store original values
+        float originalRun = player.runningSpeed;
+        float originalWalk = player.walkingSpeed;
+        float originalPunch = player.punchForce;
+
+        // Apply boost
+        player.runningSpeed *= killSpeedBoost;
+        player.walkingSpeed *= killSpeedBoost;
+        player.punchForce *= killPunchBoost;
+
+        // Visual effect
         if (player.boostEffect != null)
             player.boostEffect.SetActive(true);
 
-        float baseRunSpeed = 11.5f;
-        float baseWalkSpeed = 7.5f;
-        float basePunchForce = 15f;
+        Debug.Log($"Speed boosted! Run: {player.runningSpeed}, Walk: {player.walkingSpeed}");
 
-        player.runningSpeed = baseRunSpeed * eh.killSpeedBoost;
-        player.walkingSpeed = baseWalkSpeed * eh.killSpeedBoost;
-        player.punchForce = basePunchForce * eh.killPunchBoost;
+        // Wait for boost duration
+        yield return new WaitForSeconds(boostDuration);
 
-        if (player.playerCamera != null)
-            StartCoroutine(CameraShake(player.playerCamera.transform, 0.2f, 0.1f));
+        // Reset to original values
+        player.runningSpeed = originalRun;
+        player.walkingSpeed = originalWalk;
+        player.punchForce = originalPunch;
 
-        currentBoostCoroutine = StartCoroutine(BoostTimer(player, eh.boostDuration, baseRunSpeed, baseWalkSpeed, basePunchForce));
-        yield return currentBoostCoroutine;
-    }
-
-    private IEnumerator BoostTimer(FPSController player, float duration, float baseRun, float baseWalk, float basePunch)
-    {
-        yield return new WaitForSeconds(duration);
-
-        player.runningSpeed = baseRun;
-        player.walkingSpeed = baseWalk;
-        player.punchForce = basePunch;
-
+        // Visual effect off
         if (player.boostEffect != null)
             player.boostEffect.SetActive(false);
 
         currentBoostCoroutine = null;
+        Debug.Log("Player boost ended!");
     }
 
-    private void ResetPlayerSpeed(FPSController player)
-    {
-        player.runningSpeed = 11.5f;
-        player.walkingSpeed = 7.5f;
-        player.punchForce = 15f;
-
-        if (player.boostEffect != null)
-            player.boostEffect.SetActive(false);
-    }
-
-    private IEnumerator DoScreenFlash(float duration)
+    private IEnumerator DoScreenFlash()
     {
         if (screenFlash == null) yield break;
 
@@ -244,6 +204,7 @@ public class EnemySpawner : MonoBehaviour
         screenFlash.color = flashColor;
 
         float elapsed = 0f;
+        float duration = 0.7f;
 
         while (elapsed < duration)
         {
@@ -260,19 +221,19 @@ public class EnemySpawner : MonoBehaviour
 
     private IEnumerator CameraShake(Transform cam, float duration, float magnitude)
     {
-        Vector3 orig = cam.localPosition;
+        Vector3 originalPos = cam.localPosition;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             float x = Random.Range(-1f, 1f) * magnitude;
             float y = Random.Range(-1f, 1f) * magnitude;
-            cam.localPosition = orig + new Vector3(x, y, 0);
+            cam.localPosition = originalPos + new Vector3(x, y, 0);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        cam.localPosition = orig;
+        cam.localPosition = originalPos;
     }
 
     private Vector3 GetRandomNavMeshPosition(Vector3 center, float radius)
@@ -286,7 +247,6 @@ public class EnemySpawner : MonoBehaviour
             if (NavMesh.SamplePosition(randomPoint, out hit, radius, NavMesh.AllAreas))
                 return hit.position;
         }
-
         return Vector3.zero;
     }
 
