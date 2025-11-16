@@ -4,19 +4,15 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyKnockback : MonoBehaviour
 {
-    [Header("Knockback Settings")]
     public float knockbackForceMultiplier = 5f;
-
-    [Header("Sprites")]
     public GameObject spriteOne;
     public GameObject spriteTwo;
-    public GameObject explosionSprite; // Drag your explosion sprite here
+    public GameObject explosionSprite; 
     public float hitDuration = 0.5f;
 
-    [Header("Audio")]
     public AudioClip[] hitSounds;
     public AudioClip[] punchSounds;
-    public AudioClip explosionSound; // Drag your explosion SFX here
+    public AudioClip explosionSound;
     public AudioSource audioSource;
 
     private int currentHitSound = 0;
@@ -31,7 +27,6 @@ public class EnemyKnockback : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         enemyHealth = GetComponent<EnemyHealth>();
 
-        // Set initial sprite - explosion sprite starts disabled
         if (spriteOne != null) spriteOne.SetActive(true);
         if (spriteTwo != null) spriteTwo.SetActive(false);
         if (explosionSprite != null) explosionSprite.SetActive(false);
@@ -76,15 +71,13 @@ public class EnemyKnockback : MonoBehaviour
         PlayHitSound();
     }
 
-    // NEW: Show explosion sprite and play SFX when enemy dies
+
     public void TriggerExplosion()
     {
-        // Switch to explosion sprite
         if (spriteOne != null) spriteOne.SetActive(false);
         if (spriteTwo != null) spriteTwo.SetActive(false);
         if (explosionSprite != null) explosionSprite.SetActive(true);
 
-        // Play explosion sound
         if (explosionSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(explosionSound);

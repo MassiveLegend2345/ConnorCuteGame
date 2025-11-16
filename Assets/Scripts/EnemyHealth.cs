@@ -1,22 +1,19 @@
+/*
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyHealth : MonoBehaviour
 {
-    [Header("Health")]
     public int maxHits = 3;
-    public int currentHits = 0; // Changed to public so spawner can reset it
+    public int currentHits = 0; 
 
-    [Header("Kill Rewards")]
     public int scorePerKill = 10;
     public float timePerKill = 2f;
 
-    [Header("Player Boost")]
     public float killSpeedBoost = 1.5f;
     public float killPunchBoost = 1.5f;
     public float boostDuration = 3f;
 
-    [Header("Visuals")]
     public GameObject pointsPopupPrefab;
     public string pointsText = "+10";
     public UnityEngine.UI.Image screenFlash;
@@ -35,3 +32,4 @@ public class EnemyHealth : MonoBehaviour
         return dead;
     }
 }
+*/

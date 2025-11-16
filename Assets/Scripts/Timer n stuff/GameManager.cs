@@ -5,18 +5,14 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-
-    [Header("Runtime")]
     public float timeRemaining = 60f;
     public int score = 0;
     public bool gameEnded = false;
-
-    [Header("UI")]
     public TMP_Text timerText;
     public TMP_Text scoreText;
     public GameObject gameOverScreen;
     public TMP_Text finalScoreText;
-    public GameObject exitInstructions; // Add this UI text for instructions
+    public GameObject exitInstructions; 
 
     private void Awake()
     {
@@ -37,7 +33,6 @@ public class GameManager : MonoBehaviour
     {
         if (gameEnded)
         {
-            // Check for input when game is over
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 ReturnToMainMenu();
@@ -104,7 +99,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Quitting game...");
         Application.Quit();
 
-        // For testing in editor
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

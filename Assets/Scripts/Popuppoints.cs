@@ -33,11 +33,8 @@ public class PointsPopup : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
-            // Move the popup upwards over time
             if (mainCam != null)
                 transform.position = mainCam.WorldToScreenPoint(Vector3.Lerp(worldPosition, worldPosition + Vector3.up, t));
-
-            // Fade out
             cg.alpha = 1f - t;
 
             yield return null;

@@ -5,19 +5,15 @@ using UnityEngine.UI;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Spawning")]
     public GameObject enemyPrefab;
     public float spawnRadius = 10f;
     public int maxEnemies = 5;
     public float spawnInterval = 3f;
 
-    [Header("Respawn")]
     public float respawnDelay = 2f;
 
-    [Header("Screen Flash")]
     public Image screenFlash;
 
-    [Header("Kill Rewards")]
     public int scorePerKill = 10;
     public float timePerKill = 2f;
     public float killSpeedBoost = 1.5f;
@@ -36,7 +32,6 @@ public class EnemySpawner : MonoBehaviour
     {
         player = FindObjectOfType<FPSController>();
 
-        // STORE ORIGINAL SPEEDS ONCE
         if (player != null)
         {
             originalRunSpeed = player.runningSpeed;
@@ -125,13 +120,11 @@ public class EnemySpawner : MonoBehaviour
 
     private IEnumerator PlayerKillBoost(FPSController player)
     {
-        // STOP ANY EXISTING BOOST FIRST
         if (currentBoostCoroutine != null)
         {
             StopCoroutine(currentBoostCoroutine);
         }
 
-        // APPLY BOOST TO ORIGINAL SPEEDS (not current speeds)
         player.runningSpeed = originalRunSpeed * killSpeedBoost;
         player.walkingSpeed = originalWalkSpeed * killSpeedBoost;
         player.punchForce = originalPunchForce * killPunchBoost;
@@ -140,7 +133,6 @@ public class EnemySpawner : MonoBehaviour
 
         yield return new WaitForSeconds(boostDuration);
 
-        // RESET TO ORIGINAL SPEEDS
         player.runningSpeed = originalRunSpeed;
         player.walkingSpeed = originalWalkSpeed;
         player.punchForce = originalPunchForce;

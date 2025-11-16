@@ -6,7 +6,6 @@ public class PointsCanvas : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton pattern
         if (instance == null)
             instance = this;
         else

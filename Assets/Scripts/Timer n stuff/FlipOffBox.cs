@@ -11,10 +11,8 @@ public class FlipOffBox : MonoBehaviour
     public AudioSource audioSource;
     public float cooldown = 2f;
 
-    [Header("Cooldown Visual")]
     public Image cooldownOverlay;
 
-    [Header("Ready Sound")]
     public AudioClip readySound;
 
     private bool canFlip = true;
@@ -27,7 +25,6 @@ public class FlipOffBox : MonoBehaviour
         col = GetComponent<Collider>();
         col.enabled = false;
 
-        // Ensure we have an AudioSource
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -37,7 +34,6 @@ public class FlipOffBox : MonoBehaviour
             }
         }
 
-        // Start with cooldown overlay fully visible (ready state)
         if (cooldownOverlay != null)
         {
             cooldownOverlay.gameObject.SetActive(true);
@@ -56,7 +52,6 @@ public class FlipOffBox : MonoBehaviour
         canFlip = false;
         isOnCooldown = true;
 
-        // Immediately hide overlay when used
         if (cooldownOverlay != null)
             cooldownOverlay.color = new Color(1, 1, 1, 0f);
 
@@ -87,7 +82,6 @@ public class FlipOffBox : MonoBehaviour
         if (hitSomething) PlayHitSound();
         col.enabled = false;
 
-        // SMOOTH FADE-IN DURING COOLDOWN
         float timer = 0f;
         while (timer < cooldown)
         {
@@ -103,11 +97,9 @@ public class FlipOffBox : MonoBehaviour
             yield return null;
         }
 
-        // Ensure it's fully visible at the end
         if (cooldownOverlay != null)
             cooldownOverlay.color = new Color(1, 1, 1, 1f);
 
-        // PLAY READY SOUND EFFECT!
         PlayReadySound();
 
         canFlip = true;

@@ -4,7 +4,6 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    [Header("Wander Settings")]
     public float wanderRadius = 5f;
     public float wanderInterval = 3f;
 
@@ -35,20 +34,17 @@ public class EnemyAI : MonoBehaviour
     {
         while (true)
         {
-            // Wait until agent is enabled and on NavMesh
             while (agent == null || !agent.enabled || !agent.isOnNavMesh)
             {
                 yield return null;
             }
 
-            // Pick a random point within wander radius
             Vector3 randomDirection = Random.insideUnitSphere * wanderRadius;
             randomDirection += transform.position;
 
             NavMeshHit hit;
             if (NavMesh.SamplePosition(randomDirection, out hit, wanderRadius, NavMesh.AllAreas))
             {
-                // Wait a frame after warp to avoid SetDestination errors
                 agent.SetDestination(hit.position);
             }
 
@@ -56,9 +52,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Force agent to a position safely (for respawn)
-    /// </summary>
     public void WarpToPosition(Vector3 targetPosition)
     {
         if (agent == null) return;
