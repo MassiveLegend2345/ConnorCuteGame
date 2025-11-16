@@ -1,20 +1,20 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(Collider))]
 public class FlipOffBox : MonoBehaviour
 {
     public float knockForce = 5f;
-
     public int scoreAmount = 5;
     public float timeAmount = 1f;
-
     public AudioClip[] hitSounds;
     public AudioSource audioSource;
+    public float cooldown = 2f; // Increased cooldown to prevent spam
 
-    public float cooldown = 1.7f;
+    [Header("Cooldown Visual")]
+    public Image cooldownOverlay; // Drag a semi-transparent image here
+
     private bool canFlip = true;
-
     private int currentSoundIndex = 0;
     private Collider col;
 
@@ -22,6 +22,10 @@ public class FlipOffBox : MonoBehaviour
     {
         col = GetComponent<Collider>();
         col.enabled = false;
+
+        // Hide cooldown overlay at start
+        if (cooldownOverlay != null)
+            cooldownOverlay.gameObject.SetActive(false);
     }
 
     public void Activate()
@@ -33,6 +37,14 @@ public class FlipOffBox : MonoBehaviour
     private IEnumerator FlipRoutine()
     {
         canFlip = false;
+
+        // SHOW COOLDOWN VISUAL
+        if (cooldownOverlay != null)
+        {
+            cooldownOverlay.gameObject.SetActive(true);
+            cooldownOverlay.color = new Color(1, 1, 1, 0.7f); // Semi-transparent white
+        }
+
         col.enabled = true;
 
         yield return new WaitForSeconds(0.1f);
@@ -45,7 +57,6 @@ public class FlipOffBox : MonoBehaviour
             if (other.CompareTag("Enemy"))
             {
                 hitSomething = true;
-
                 GameManager.Instance?.AddScore(scoreAmount);
                 GameManager.Instance?.AddTime(timeAmount);
 
@@ -58,24 +69,37 @@ public class FlipOffBox : MonoBehaviour
             }
         }
 
-        if (hitSomething)
-            PlayHitSound();
-
+        if (hitSomething) PlayHitSound();
         col.enabled = false;
 
-        yield return new WaitForSeconds(cooldown);
+        // COOLDOWN PERIOD WITH VISUAL FEEDBACK
+        float timer = cooldown;
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+
+            // Fade out the overlay during cooldown
+            if (cooldownOverlay != null)
+            {
+                float alpha = Mathf.Lerp(0f, 0.7f, timer / cooldown);
+                cooldownOverlay.color = new Color(1, 1, 1, alpha);
+            }
+
+            yield return null;
+        }
+
+        // HIDE COOLDOWN VISUAL
+        if (cooldownOverlay != null)
+            cooldownOverlay.gameObject.SetActive(false);
+
         canFlip = true;
     }
 
     private void PlayHitSound()
     {
         if (hitSounds.Length == 0 || audioSource == null) return;
-
         audioSource.clip = hitSounds[currentSoundIndex];
         audioSource.Play();
-
-        currentSoundIndex++;
-        if (currentSoundIndex >= hitSounds.Length)
-            currentSoundIndex = 0;
+        currentSoundIndex = (currentSoundIndex + 1) % hitSounds.Length;
     }
 }
