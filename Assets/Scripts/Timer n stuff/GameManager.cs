@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text scoreText;
     public GameObject gameOverScreen;
     public TMP_Text finalScoreText;
+    public GameObject exitInstructions; // Add this UI text for instructions
 
     private void Awake()
     {
@@ -28,11 +30,24 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
 
         if (gameOverScreen != null) gameOverScreen.SetActive(false);
+        if (exitInstructions != null) exitInstructions.SetActive(false);
     }
 
     private void Update()
     {
-        if (gameEnded) return;
+        if (gameEnded)
+        {
+            // Check for input when game is over
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                ReturnToMainMenu();
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                QuitGame();
+            }
+            return;
+        }
 
         timeRemaining -= Time.deltaTime;
         if (timeRemaining <= 0f)
@@ -56,7 +71,6 @@ public class GameManager : MonoBehaviour
     public void AddScore(int amount)
     {
         score += amount;
-        // Optional: can add visual feedback here
     }
 
     public void AddTime(float amount)
@@ -72,9 +86,27 @@ public class GameManager : MonoBehaviour
 
         if (gameOverScreen != null) gameOverScreen.SetActive(true);
         if (finalScoreText != null) finalScoreText.text = "Your Score: " + score;
+        if (exitInstructions != null) exitInstructions.SetActive(true);
 
         Time.timeScale = 0f;
 
         Debug.Log("GAME OVER — FINAL SCORE: " + score);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("Quitting game...");
+        Application.Quit();
+
+        // For testing in editor
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }

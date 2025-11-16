@@ -9,41 +9,56 @@ public class FlipOffBox : MonoBehaviour
     public float timeAmount = 1f;
     public AudioClip[] hitSounds;
     public AudioSource audioSource;
-    public float cooldown = 2f; // Increased cooldown to prevent spam
+    public float cooldown = 2f;
 
     [Header("Cooldown Visual")]
-    public Image cooldownOverlay; // Drag a semi-transparent image here
+    public Image cooldownOverlay;
+
+    [Header("Ready Sound")]
+    public AudioClip readySound;
 
     private bool canFlip = true;
     private int currentSoundIndex = 0;
     private Collider col;
+    private bool isOnCooldown = false;
 
     private void Awake()
     {
         col = GetComponent<Collider>();
         col.enabled = false;
 
-        // Hide cooldown overlay at start
+        // Ensure we have an AudioSource
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+
+        // Start with cooldown overlay fully visible (ready state)
         if (cooldownOverlay != null)
-            cooldownOverlay.gameObject.SetActive(false);
+        {
+            cooldownOverlay.gameObject.SetActive(true);
+            cooldownOverlay.color = new Color(1, 1, 1, 1f);
+        }
     }
 
     public void Activate()
     {
-        if (canFlip)
+        if (canFlip && !isOnCooldown)
             StartCoroutine(FlipRoutine());
     }
 
     private IEnumerator FlipRoutine()
     {
         canFlip = false;
+        isOnCooldown = true;
 
-        // SHOW COOLDOWN VISUAL
+        // Immediately hide overlay when used
         if (cooldownOverlay != null)
-        {
-            cooldownOverlay.gameObject.SetActive(true);
-            cooldownOverlay.color = new Color(1, 1, 1, 0.7f); // Semi-transparent white
-        }
+            cooldownOverlay.color = new Color(1, 1, 1, 0f);
 
         col.enabled = true;
 
@@ -72,34 +87,52 @@ public class FlipOffBox : MonoBehaviour
         if (hitSomething) PlayHitSound();
         col.enabled = false;
 
-        // COOLDOWN PERIOD WITH VISUAL FEEDBACK
-        float timer = cooldown;
-        while (timer > 0)
+        // SMOOTH FADE-IN DURING COOLDOWN
+        float timer = 0f;
+        while (timer < cooldown)
         {
-            timer -= Time.deltaTime;
+            timer += Time.deltaTime;
+            float progress = timer / cooldown;
 
-            // Fade out the overlay during cooldown
             if (cooldownOverlay != null)
             {
-                float alpha = Mathf.Lerp(0f, 0.7f, timer / cooldown);
+                float alpha = Mathf.Lerp(0f, 1f, progress);
                 cooldownOverlay.color = new Color(1, 1, 1, alpha);
             }
 
             yield return null;
         }
 
-        // HIDE COOLDOWN VISUAL
+        // Ensure it's fully visible at the end
         if (cooldownOverlay != null)
-            cooldownOverlay.gameObject.SetActive(false);
+            cooldownOverlay.color = new Color(1, 1, 1, 1f);
+
+        // PLAY READY SOUND EFFECT!
+        PlayReadySound();
 
         canFlip = true;
+        isOnCooldown = false;
     }
 
     private void PlayHitSound()
     {
         if (hitSounds.Length == 0 || audioSource == null) return;
-        audioSource.clip = hitSounds[currentSoundIndex];
-        audioSource.Play();
+        audioSource.PlayOneShot(hitSounds[currentSoundIndex]);
         currentSoundIndex = (currentSoundIndex + 1) % hitSounds.Length;
+    }
+
+    private void PlayReadySound()
+    {
+        if (readySound != null && audioSource != null)
+        {
+            Debug.Log("Playing ready sound!");
+            audioSource.PlayOneShot(readySound);
+        }
+        else
+        {
+            Debug.LogWarning("Ready sound not set up properly!");
+            if (readySound == null) Debug.LogWarning("ReadySound is null");
+            if (audioSource == null) Debug.LogWarning("AudioSource is null");
+        }
     }
 }
