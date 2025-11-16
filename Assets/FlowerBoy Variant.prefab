@@ -354,7 +354,7 @@ GameObject:
   - component: {fileID: 1665622332255449041}
   - component: {fileID: 3068633174283887433}
   - component: {fileID: 8287863799176452112}
-  - component: {fileID: 3307419498502210786}
+  - component: {fileID: 8876507708605461170}
   - component: {fileID: 6032064461974069212}
   - component: {fileID: 472872423594459109}
   - component: {fileID: 7592810750393027572}
@@ -515,7 +515,7 @@ MonoBehaviour:
   punchHitClips:
   - {fileID: 8300000, guid: 4558015fa33d3b748b38c5bfaefd8fab, type: 3}
   - {fileID: 8300000, guid: fb4de1cd32e057c44b8a6668a42be34b, type: 3}
---- !u!114 &3307419498502210786
+--- !u!114 &8876507708605461170
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -524,17 +524,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 6765822355685452781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af75004ae263e5a4a90bbfb1593f52b9, type: 3}
+  m_Script: {fileID: 11500000, guid: 89a44bb004a22bf40ab81114749a3fe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxHits: 2
   currentHits: 0
   scorePerKill: 0
-  timePerKill: 8
-  killSpeedBoost: 2
-  killPunchBoost: 0
-  boostDuration: 8
-  pointsPopupPrefab: {fileID: 877196499886681201, guid: c1615cfb2067cb54788dfa56e40ec2fb, type: 3}
+  timePerKill: 5
+  killSpeedBoost: 2.5
+  killPunchBoost: 1.5
+  boostDuration: 3
+  pointsPopupPrefab: {fileID: 0}
   pointsText: +10
   screenFlash: {fileID: 0}
   flashDuration: 0.7

@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 8115613177724152449}
   - component: {fileID: 5559957749474436633}
   - component: {fileID: 1493332187977243968}
-  - component: {fileID: 5357974050299560370}
+  - component: {fileID: 3531486327694583396}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Enemy
@@ -232,7 +232,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   punchAudioSource: {fileID: 0}
   punchHitClips: []
---- !u!114 &5357974050299560370
+--- !u!114 &3531486327694583396
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -241,17 +241,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 4204125737801100989}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af75004ae263e5a4a90bbfb1593f52b9, type: 3}
+  m_Script: {fileID: 11500000, guid: 89a44bb004a22bf40ab81114749a3fe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxHits: 3
   currentHits: 0
-  scorePerKill: 11
-  timePerKill: 0
-  killSpeedBoost: 2
-  killPunchBoost: 0
-  boostDuration: 8
-  pointsPopupPrefab: {fileID: 877196499886681201, guid: c1615cfb2067cb54788dfa56e40ec2fb, type: 3}
+  scorePerKill: 10
+  timePerKill: 2
+  killSpeedBoost: 1.5
+  killPunchBoost: 1.5
+  boostDuration: 3
+  pointsPopupPrefab: {fileID: 0}
   pointsText: +10
   screenFlash: {fileID: 0}
   flashDuration: 0.7

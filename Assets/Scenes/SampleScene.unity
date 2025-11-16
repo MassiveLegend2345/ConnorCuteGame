@@ -1691,8 +1691,10 @@ MonoBehaviour:
 
     MrDirt - 290
 
-    Mango67
-    - 247'
+    Connor
+    - 267
+
+    Mango67 - 247'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3380,7 +3382,7 @@ MonoBehaviour:
   timePerKill: 5
   killSpeedBoost: 2.5
   killPunchBoost: 1.5
-  boostDuration: 6
+  boostDuration: 10
 --- !u!4 &395616642
 Transform:
   m_ObjectHideFlags: 0
@@ -6781,7 +6783,7 @@ MonoBehaviour:
   timePerKill: 0
   killSpeedBoost: 2.5
   killPunchBoost: 1.5
-  boostDuration: 6
+  boostDuration: 10
 --- !u!4 &989370049
 Transform:
   m_ObjectHideFlags: 0
@@ -7333,7 +7335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 996, y: 426}
+  m_AnchoredPosition: {x: 996, y: 509}
   m_SizeDelta: {x: 1080, y: 1920}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1133513779
@@ -8795,7 +8797,7 @@ MonoBehaviour:
   timePerKill: 0
   killSpeedBoost: 2.5
   killPunchBoost: 1.5
-  boostDuration: 6
+  boostDuration: 10
 --- !u!4 &1323784601
 Transform:
   m_ObjectHideFlags: 0
@@ -9090,7 +9092,7 @@ MonoBehaviour:
   timePerKill: 5
   killSpeedBoost: 2.5
   killPunchBoost: 1.5
-  boostDuration: 6
+  boostDuration: 10
 --- !u!4 &1364691555
 Transform:
   m_ObjectHideFlags: 0
